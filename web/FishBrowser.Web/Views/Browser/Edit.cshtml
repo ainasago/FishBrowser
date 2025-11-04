@@ -1,6 +1,16 @@
 @{
+    var isModal = Context.Request.Query.ContainsKey("modal");
     Layout = "_LayoutAdmin";
     ViewData["Title"] = "编辑浏览器";
+}
+
+@if (isModal)
+{
+    <style>
+        .main-header, .main-sidebar, .content-wrapper > .content-header { display: none !important; }
+        .content-wrapper { margin-left: 0 !important; }
+        body { background: #f4f6f9; }
+    </style>
 }
 
 <!-- Main content -->
@@ -245,17 +255,20 @@
                     </div>
                 </div>
 
-                <!-- 操作按钮 -->
-                <div class="card">
-                    <div class="card-footer">
-                        <button type="button" class="btn btn-primary" onclick="saveBrowser()">
-                            <i class="fas fa-save"></i> 保存
-                        </button>
-                        <a href="@Url.Action("Index")" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> 取消
-                        </a>
+                @if (!isModal)
+                {
+                    <!-- 操作按钮 -->
+                    <div class="card">
+                        <div class="card-footer">
+                            <button type="button" class="btn btn-primary" onclick="saveBrowser()">
+                                <i class="fas fa-save"></i> 保存
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelEdit()">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                        </div>
                     </div>
-                </div>
+                }
             </div>
 
             <!-- 右侧：指纹评分 -->
@@ -493,9 +506,18 @@
                 success: function(response) {
                     if (response.success) {
                         showSuccess('保存成功');
-                        setTimeout(() => {
-                            window.location.href = '@Url.Action("Index")';
-                        }, 1000);
+                        // 通知父窗口保存成功
+                        if (window.parent !== window) {
+                            window.parent.postMessage({
+                                type: 'browserSaved',
+                                message: '保存成功'
+                            }, '*');
+                        } else {
+                            // 如果不在 iframe 中，跳转到列表页
+                            setTimeout(() => {
+                                window.location.href = '@Url.Action("Index")';
+                            }, 1000);
+                        }
                     } else {
                         showError(response.error || '保存失败');
                     }
@@ -671,9 +693,18 @@
                 success: function(data) {
                     if (data.success) {
                         showSuccess('删除成功');
-                        setTimeout(() => {
-                            window.location.href = '@Url.Action("Index")';
-                        }, 1000);
+                        // 通知父窗口删除成功
+                        if (window.parent !== window) {
+                            window.parent.postMessage({
+                                type: 'browserSaved',
+                                message: '删除成功'
+                            }, '*');
+                        } else {
+                            // 如果不在 iframe 中，跳转到列表页
+                            setTimeout(() => {
+                                window.location.href = '@Url.Action("Index")';
+                            }, 1000);
+                        }
                     } else {
                         showError(data.error || '删除失败');
                     }
@@ -706,6 +737,17 @@
                 toastr.error(message);
             } else {
                 alert('错误: ' + message);
+            }
+        }
+
+        // 取消编辑
+        function cancelEdit() {
+            if (window.parent !== window) {
+                // 在 iframe 中，通知父窗口关闭
+                window.parent.postMessage({ type: 'browserSaved' }, '*');
+            } else {
+                // 不在 iframe 中，直接跳转
+                window.location.href = '@Url.Action("Index")';
             }
         }
     </script>

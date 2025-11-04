@@ -18,6 +18,9 @@ builder.Services.AddHttpClient("FishBrowserApi", client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+// 添加 HttpClientFactory 用于指纹数据 API 调用
+builder.Services.AddHttpClient();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

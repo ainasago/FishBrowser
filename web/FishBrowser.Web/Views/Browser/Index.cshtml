@@ -64,9 +64,9 @@
                             <button type="button" class="btn btn-success btn-sm mr-2" onclick="createRandomBrowser()">
                                 <i class="fas fa-magic"></i> 一键创建随机浏览器
                             </button>
-                            <a href="@Url.Action("Create")" class="btn btn-primary btn-sm">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="openCreateModal()">
                                 <i class="fas fa-plus"></i> 添加浏览器
-                            </a>
+                            </button>
                         </div>
                     </div>
                     <!-- 过滤器 -->
@@ -169,6 +169,31 @@
         </div>
     </div>
 </section>
+
+<!-- 浏览器编辑弹出框 -->
+<div class="modal fade" id="browserModal" tabindex="-1" role="dialog" aria-labelledby="browserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document" style="max-width: 90%;">
+        <div class="modal-content" style="height: 90vh;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="browserModalLabel">浏览器管理</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 0; height: calc(90vh - 120px); overflow: auto;">
+                <iframe id="browserIframe" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="saveButton">
+                    <i class="fas fa-save"></i> 保存
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> 取消
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
@@ -351,9 +376,9 @@
                             <button class="btn btn-sm btn-warning stop-btn" onclick="stopBrowser(${browser.id})" title="停止" ${!isRunning ? 'disabled' : ''}>
                                 <i class="fas fa-stop"></i>
                             </button>
-                            <a href="@Url.Action("Edit")/?id=${browser.id}" class="btn btn-sm btn-info" title="编辑">
+                            <button class="btn btn-sm btn-info" onclick="openEditModal(${browser.id})" title="编辑">
                                 <i class="fas fa-edit"></i>
-                            </a>
+                            </button>
                             <button class="btn btn-sm btn-danger" onclick="deleteBrowser(${browser.id})" title="删除">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -568,5 +593,47 @@
                 }
             });
         }
+
+        // 打开创建浏览器弹出框
+        function openCreateModal() {
+            $('#browserModalLabel').text('添加浏览器');
+            $('#browserIframe').attr('src', '@Url.Action("Create")?modal=1');
+            $('#browserModal').modal('show');
+        }
+
+        // 打开编辑浏览器弹出框
+        function openEditModal(id) {
+            $('#browserModalLabel').text('编辑浏览器');
+            $('#browserIframe').attr('src', '@Url.Action("Create")?id=' + id + '&modal=1');
+            $('#browserModal').modal('show');
+        }
+
+        // 监听 iframe 内的保存成功事件
+        window.addEventListener('message', function(event) {
+            // 验证消息来源（可选，增加安全性）
+            if (event.data && event.data.type === 'browserSaved') {
+                // 关闭弹出框
+                $('#browserModal').modal('hide');
+                // 刷新列表
+                loadBrowsers(currentPage);
+                loadStatistics();
+                // 显示成功消息
+                showSuccess(event.data.message || '保存成功');
+            }
+        });
+
+        // 清理 iframe 内容，避免缓存问题
+        $('#browserModal').on('hidden.bs.modal', function () {
+            $('#browserIframe').attr('src', 'about:blank');
+        });
+
+        // 保存按钮点击事件 - 调用 iframe 内的保存函数
+        $('#saveButton').on('click', function() {
+            const iframe = document.getElementById('browserIframe');
+            if (iframe && iframe.contentWindow) {
+                // 调用 iframe 内的 saveBrowser 函数
+                iframe.contentWindow.saveBrowser();
+            }
+        });
     </script>
 }

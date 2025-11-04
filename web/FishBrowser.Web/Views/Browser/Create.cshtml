@@ -1,146 +1,273 @@
 @{
+    var isModal = Context.Request.Query.ContainsKey("modal");
+    var browserId = Context.Request.Query["id"].ToString();
+    var isEdit = !string.IsNullOrEmpty(browserId);
     Layout = "_LayoutAdmin";
-    ViewData["Title"] = "新建浏览器";
+    ViewData["Title"] = isEdit ? "编辑浏览器" : "新建浏览器";
 }
+
+@if (isModal)
+{
+    <style>
+        .main-header, .main-sidebar, .content-wrapper > .content-header { display: none !important; }
+        .content-wrapper { margin-left: 0 !important; }
+        body { background: #f4f6f9; }
+    </style>
+}
+
+<style>
+    .section-header { font-size: 16px; font-weight: bold; margin-bottom: 12px; }
+    .field-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+    .lock-btn { font-size: 16px; cursor: pointer; opacity: 0.3; transition: opacity 0.2s; }
+    .lock-btn.locked { opacity: 1; color: #ff9800; }
+    .score-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .recommendation-item { padding: 4px 0; color: #666; font-size: 11px; }
+    .recommendation-item:before { content: "• "; color: #ff9800; margin-right: 8px; }
+</style>
 
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
         <div class="row">
-            <!-- 编辑表单 -->
+            <!-- 左侧：编辑区 (2/3) -->
             <div class="col-md-8">
                 <div class="card card-primary">
                     <div class="card-header">
                         <h3 class="card-title">📋 基本信息</h3>
                     </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="browserName">浏览器名称 <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="browserName" placeholder="输入浏览器名称" required>
+                    <div class="card-body" style="background: #f9f9f9;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">浏览器名称 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="browserName" placeholder="输入浏览器名称" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">所属分组</label>
+                                    <select class="form-control" id="browserGroup">
+                                        <option value="">未分组</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-
                         <div class="form-group">
-                            <label for="browserNotes">备注</label>
-                            <textarea class="form-control" id="browserNotes" rows="3" placeholder="输入备注信息"></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="browserGroup">分组</label>
-                            <select class="form-control" id="browserGroup">
-                                <option value="">未分组</option>
-                            </select>
+                            <label class="field-label">备注</label>
+                            <textarea class="form-control" id="browserNotes" rows="2" placeholder="输入备注信息"></textarea>
                         </div>
                     </div>
                 </div>
 
                 <div class="card card-info">
-                    <div class="card-header">
-                        <h3 class="card-title">⚙️ 浏览器配置</h3>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">🌐 浏览器配置</h3>
+                        <div class="custom-control custom-checkbox mb-0">
+                            <input type="checkbox" class="custom-control-input" id="lockBrowserConfig">
+                            <label class="custom-control-label" for="lockBrowserConfig">📌 固定配置</label>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="browserEngine">浏览器引擎</label>
-                            <select class="form-control" id="browserEngine">
-                                <option value="UndetectedChrome">UndetectedChrome (推荐)</option>
-                                <option value="Chromium">Chromium</option>
-                                <option value="Firefox">Firefox</option>
-                            </select>
+                    <div class="card-body" style="background: #f9f9f9;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">浏览器引擎 <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="browserEngine">
+                                        <option value="UndetectedChrome">UndetectedChrome (推荐)</option>
+                                        <option value="Chromium">Chromium</option>
+                                        <option value="Firefox">Firefox</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">操作系统 <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="browserOS">
+                                        <option value="Windows">Windows</option>
+                                        <option value="MacOS">MacOS</option>
+                                        <option value="Linux">Linux</option>
+                                        <option value="Android">Android</option>
+                                        <option value="iOS">iOS</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-
-                        <div class="form-group">
-                            <label for="browserOS">操作系统</label>
-                            <select class="form-control" id="browserOS">
-                                <option value="Windows">Windows</option>
-                                <option value="MacOS">MacOS</option>
-                                <option value="Linux">Linux</option>
-                            </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">屏幕分辨率</label>
+                                    <select class="form-control" id="browserResolution">
+                                        <option value="1920x1080">1920x1080 (桌面推荐)</option>
+                                        <option value="1366x768">1366x768</option>
+                                        <option value="1280x720">1280x720</option>
+                                        <option value="2560x1440">2560x1440 (2K)</option>
+                                        <option value="3840x2160">3840x2160 (4K)</option>
+                                        <option value="390x844">390x844 (iPhone 13/14)</option>
+                                        <option value="393x852">393x852 (iPhone 15)</option>
+                                        <option value="428x926">428x926 (iPhone 14 Pro Max)</option>
+                                        <option value="360x800">360x800 (Android 常见)</option>
+                                        <option value="412x915">412x915 (Pixel 7)</option>
+                                        <option value="1080x2400">1080x2400 (Android 旗舰)</option>
+                                        <option value="820x1180">820x1180 (iPad)</option>
+                                        <option value="1024x1366">1024x1366 (iPad Pro)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">语言区域</label>
+                                    <select class="form-control" id="browserLocale">
+                                        <option value="zh-CN">zh-CN (简体中文)</option>
+                                        <option value="en-US">en-US (美国英语)</option>
+                                        <option value="ja-JP">ja-JP (日本語)</option>
+                                        <option value="ko-KR">ko-KR (한국어)</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-
-                        <div class="form-group">
-                            <label for="browserResolution">分辨率</label>
-                            <input type="text" class="form-control" id="browserResolution" value="1920x1080" placeholder="宽x高">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="browserLocale">语言/地区</label>
-                            <input type="text" class="form-control" id="browserLocale" value="zh-CN" placeholder="例: zh-CN, en-US">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="timezone">时区</label>
-                            <input type="text" class="form-control" id="timezone" value="Asia/Shanghai" placeholder="例: Asia/Shanghai">
-                        </div>
-
                         <div class="form-group">
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" id="persistence" checked>
                                 <label class="custom-control-label" for="persistence">启用会话持久化（保存 Cookie、历史记录等）</label>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="headless">
-                                <label class="custom-control-label" for="headless">无头模式（Headless）</label>
-                            </div>
-                            <small class="form-text text-muted">Windows 默认有头模式，Linux 建议使用无头模式</small>
-                        </div>
                     </div>
                 </div>
 
                 <!-- 指纹特征 -->
                 <div class="card card-purple">
-                    <div class="card-header">
-                        <h3 class="card-title">🎭 指纹特征</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-sm btn-success" onclick="fullyRandomize()">
-                                <i class="fas fa-dice"></i> 完全随机
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">🎭 指纹特征</h3>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-success mr-2" onclick="fullyRandomize()">
+                                🎲 完全随机
+                            </button>
+                            <button type="button" class="btn btn-sm btn-info" onclick="regenerate()">
+                                🔄 重新生成
                             </button>
                         </div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" style="background: #f9f9f9;">
+                        <!-- User-Agent -->
                         <div class="form-group">
-                            <label for="userAgent">User Agent</label>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="field-label mb-0">User-Agent</label>
+                                <div>
+                                    <span class="lock-btn" id="lockUA" onclick="toggleLock('lockUA')" title="固定此项">📌</span>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary ml-2" onclick="randomizeUA()">🔄</button>
+                                </div>
+                            </div>
                             <input type="text" class="form-control" id="userAgent" placeholder="浏览器标识">
                         </div>
 
-                        <div class="form-group">
-                            <label for="platform">平台</label>
-                            <select class="form-control" id="platform">
-                                <option value="Win32">Win32 (Windows)</option>
-                                <option value="MacIntel">MacIntel (Mac)</option>
-                                <option value="Linux x86_64">Linux x86_64</option>
-                            </select>
+                        <!-- Platform & Timezone -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">Platform</label>
+                                    <input type="text" class="form-control" id="platform" value="Win32">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">Timezone</label>
+                                    <input type="text" class="form-control" id="timezone" value="Asia/Shanghai">
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="cpuCores">CPU 核心数</label>
-                            <input type="number" class="form-control" id="cpuCores" value="8" min="1" max="128">
+                        <!-- 硬件配置 -->
+                        <h6 class="font-weight-bold mt-3 mb-2">硬件配置</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="field-label">CPU 核心数</label>
+                                    <input type="number" class="form-control" id="cpuCores" value="8" min="1" max="128">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="field-label">内存 (GB)</label>
+                                    <input type="number" class="form-control" id="memory" value="8" min="1" max="256">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="field-label">触摸点数</label>
+                                    <input type="number" class="form-control" id="touchPoints" value="0" min="0">
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="memory">内存 (GB)</label>
-                            <input type="number" class="form-control" id="memory" value="8" min="1" max="256">
+                        <!-- WebGL 配置 -->
+                        <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+                            <h6 class="font-weight-bold mb-0">WebGL 配置</h6>
+                            <div>
+                                <span class="lock-btn" id="lockWebGL" onclick="toggleLock('lockWebGL')" title="固定此项">📌 固定</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary ml-2" onclick="randomizeWebGL()">🔄 随机</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">WebGL Vendor</label>
+                                    <input type="text" class="form-control" id="webglVendor" placeholder="例: Google Inc.">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="field-label">WebGL Renderer</label>
+                                    <input type="text" class="form-control" id="webglRenderer" placeholder="例: ANGLE (Intel HD Graphics)">
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="touchPoints">触摸点数</label>
-                            <input type="number" class="form-control" id="touchPoints" value="0" min="0">
+                        <!-- 字体列表 -->
+                        <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+                            <h6 class="font-weight-bold mb-0">字体列表</h6>
+                            <div>
+                                <span class="lock-btn" id="lockFonts" onclick="toggleLock('lockFonts')" title="固定此项">📌 固定</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary ml-2" onclick="randomizeFonts()">🔄 随机</button>
+                            </div>
                         </div>
-
                         <div class="form-group">
-                            <label for="webglVendor">WebGL Vendor</label>
-                            <input type="text" class="form-control" id="webglVendor" placeholder="例: Google Inc.">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="webglRenderer">WebGL Renderer</label>
-                            <input type="text" class="form-control" id="webglRenderer" placeholder="例: ANGLE (Intel HD Graphics)">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="fontsList">字体列表 <small class="text-muted">(逗号分隔)</small></label>
-                            <textarea class="form-control" id="fontsList" rows="3" placeholder="Arial, Verdana, Times New Roman..."></textarea>
+                            <textarea class="form-control" id="fontsList" rows="2" readonly placeholder="字体列表（逗号分隔）"></textarea>
                             <small class="form-text text-muted" id="fontsCount">0 个字体</small>
+                        </div>
+
+                        <!-- 高级选项 -->
+                        <div class="mt-3">
+                            <a data-toggle="collapse" href="#advancedOptions" role="button" aria-expanded="false">
+                                <h6 class="font-weight-bold">🔧 高级选项（Languages, Plugins, Sec-CH-UA 等） <i class="fas fa-chevron-down"></i></h6>
+                            </a>
+                            <div class="collapse" id="advancedOptions">
+                                <div class="mt-2">
+                                    <div class="form-group">
+                                        <label class="field-label">Languages JSON</label>
+                                        <input type="text" class="form-control" id="languagesJson" placeholder='["zh-CN", "zh", "en-US", "en"]'>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="field-label">Plugins JSON</label>
+                                        <input type="text" class="form-control" id="pluginsJson" placeholder="[]">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="field-label">Sec-CH-UA</label>
+                                        <input type="text" class="form-control" id="secChUa">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="field-label">Sec-CH-UA-Platform</label>
+                                        <input type="text" class="form-control" id="secChUaPlatform">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="field-label">Webdriver 模式</label>
+                                        <select class="form-control" id="webdriverMode">
+                                            <option value="undefined">undefined (推荐 - 完全移除)</option>
+                                            <option value="true">true (与真实 Chrome 一致)</option>
+                                            <option value="false">false (可能被检测)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -166,87 +293,99 @@
                     </div>
                 </div>
 
-                <!-- 操作按钮 -->
-                <div class="card">
-                    <div class="card-body">
-                        <button type="button" class="btn btn-primary" onclick="saveBrowser()">
-                            <i class="fas fa-save"></i> 创建
-                        </button>
-                        <a href="@Url.Action("Index")" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> 取消
-                        </a>
+                @if (!isModal)
+                {
+                    <!-- 操作按钮 -->
+                    <div class="card">
+                        <div class="card-body">
+                            <button type="button" class="btn btn-primary" onclick="saveBrowser()">
+                                <i class="fas fa-save"></i> @(isEdit ? "保存" : "创建")
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelEdit()">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                            @if (isEdit)
+                            {
+                                <button type="button" class="btn btn-danger float-right" onclick="deleteBrowserNow()">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+                            }
+                        </div>
                     </div>
-                </div>
+                }
             </div>
 
-            <!-- 右侧面板 -->
-            <div class="col-md-4">
-                <!-- 指纹评分 -->
-                <div class="card card-success">
-                    <div class="card-header">
-                        <h3 class="card-title">📊 指纹评分</h3>
+            <!-- 右侧：实时预览和评分 (1/3) -->
+            <div class="col-md-4" style="background: #fafafa; padding: 16px;">
+                <h5 class="section-header">📊 指纹评分</h5>
+                
+                <!-- 总体评分 -->
+                <div class="score-card">
+                    <small class="text-muted">总体评分</small>
+                    <div class="d-flex align-items-center mt-2">
+                        <div class="progress flex-grow-1" style="height: 24px;">
+                            <div id="scoreBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <strong id="totalScore" class="ml-3" style="font-size: 20px;">0</strong>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>总体评分</span>
-                                <strong id="totalScore">0</strong>
-                            </div>
-                            <div class="progress">
-                                <div id="scoreBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
-                            </div>
-                        </div>
+                    <small id="riskLevel" class="text-muted mt-2 d-block">风险等级: 未评估</small>
+                </div>
 
-                        <hr>
-
-                        <div class="small">
-                            <div class="mb-2">
-                                <span>User Agent: </span>
-                                <span id="uaScore" class="badge badge-secondary">0%</span>
-                            </div>
-                            <div class="mb-2">
-                                <span>Platform: </span>
-                                <span id="platformScore" class="badge badge-secondary">0%</span>
-                            </div>
-                            <div class="mb-2">
-                                <span>Hardware: </span>
-                                <span id="hardwareScore" class="badge badge-secondary">0%</span>
-                            </div>
-                            <div class="mb-2">
-                                <span>WebGL: </span>
-                                <span id="webglScore" class="badge badge-secondary">0%</span>
-                            </div>
-                            <div class="mb-2">
-                                <span>Fonts: </span>
-                                <span id="fontsScore" class="badge badge-secondary">0%</span>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <div id="riskLevel" class="alert alert-info mb-0">
-                            <strong>风险等级:</strong> 未评估
+                <!-- 详细评分 -->
+                <h6 class="font-weight-bold mt-3 mb-2">📈 详细评分</h6>
+                
+                <div class="bg-white border rounded p-2 mb-2">
+                    <small class="text-muted">一致性检查</small>
+                    <div class="progress mt-1" style="height: 16px;">
+                        <div id="consistencyBar" class="progress-bar bg-success" style="width: 0%">
+                            <small id="consistencyText">0</small>
                         </div>
                     </div>
                 </div>
 
-                <!-- 快速操作 -->
-                <div class="card card-info">
-                    <div class="card-header">
-                        <h3 class="card-title">⚡ 快速操作</h3>
-                    </div>
-                    <div class="card-body">
-                        <button type="button" class="btn btn-block btn-success mb-2" onclick="randomizeUA()">
-                            <i class="fas fa-random"></i> 随机 User Agent
-                        </button>
-                        <button type="button" class="btn btn-block btn-info mb-2" onclick="randomizeWebGL()">
-                            <i class="fas fa-random"></i> 随机 WebGL
-                        </button>
-                        <button type="button" class="btn btn-block btn-warning" onclick="randomizeFonts()">
-                            <i class="fas fa-random"></i> 随机字体
-                        </button>
+                <div class="bg-white border rounded p-2 mb-2">
+                    <small class="text-muted">真实性检查</small>
+                    <div class="progress mt-1" style="height: 16px;">
+                        <div id="realismBar" class="progress-bar bg-info" style="width: 0%">
+                            <small id="realismText">0</small>
+                        </div>
                     </div>
                 </div>
+
+                <div class="bg-white border rounded p-2 mb-3">
+                    <small class="text-muted">Cloudflare 风险 (越低越好)</small>
+                    <div class="progress mt-1" style="height: 16px;">
+                        <div id="cloudflareBar" class="progress-bar bg-danger" style="width: 0%">
+                            <small id="cloudflareText">0</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 优化建议 -->
+                <h6 class="font-weight-bold mt-3 mb-2">💡 优化建议</h6>
+                <div class="bg-white border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                    <div id="recommendations">
+                        <small class="text-muted">配置指纹后将显示建议</small>
+                    </div>
+                </div>
+
+                <!-- 指纹预览 -->
+                <h6 class="font-weight-bold mt-3 mb-2">🔍 指纹预览</h6>
+                <div class="bg-white border rounded p-2" style="max-height: 250px; overflow-y: auto;">
+                    <pre id="fingerprintPreview" style="font-size: 10px; margin: 0; font-family: Consolas, monospace;"></pre>
+                </div>
+
+                <!-- 快速操作 (保留) -->
+                <h6 class="font-weight-bold mt-3 mb-2">⚡ 快速操作</h6>
+                <button type="button" class="btn btn-block btn-success btn-sm mb-2" onclick="randomizeUA()">
+                    <i class="fas fa-random"></i> 随机 User Agent
+                </button>
+                <button type="button" class="btn btn-block btn-info btn-sm mb-2" onclick="randomizeWebGL()">
+                    <i class="fas fa-random"></i> 随机 WebGL
+                </button>
+                <button type="button" class="btn btn-block btn-warning btn-sm" onclick="randomizeFonts()">
+                    <i class="fas fa-random"></i> 随机字体
+                </button>
             </div>
         </div>
     </div>
@@ -254,19 +393,70 @@
 
 @section Scripts {
     <script>
+        // 编辑模式
+        const isEditMode = @(isEdit ? "true" : "false");
+        const browserId = '@browserId';
+
+        // 锁定状态
+        const locks = {
+            lockUA: false,
+            lockWebGL: false,
+            lockFonts: false,
+            lockBrowserConfig: false
+        };
+
         $(document).ready(function() {
-            loadGroups();
-            updateFingerprint();
+            loadGroups().then(() => {
+                if (isEditMode && browserId) {
+                    loadBrowserData(browserId);
+                } else {
+                    // 新建模式：生成默认随机指纹
+                    fullyRandomize();
+                }
+            });
             
             // 监听指纹字段变化
-            $('#userAgent, #platform, #cpuCores, #memory, #touchPoints, #webglVendor, #webglRenderer, #fontsList').on('change keyup', function() {
+            $('#userAgent, #platform, #cpuCores, #memory, #touchPoints, #webglVendor, #webglRenderer, #fontsList, #timezone, #languagesJson, #pluginsJson, #secChUa').on('change keyup', function() {
                 updateFingerprint();
             });
+
+            // 监听 OS 变化（重新生成指纹）
+            $('#browserOS').on('change', async function() {
+                await generateFingerprintBasedOnConfig();
+            });
+
+            // 监听 Locale 变化（重新生成指纹）
+            $('#browserLocale').on('change', async function() {
+                await generateFingerprintBasedOnConfig();
+            });
+
+            // 启动实时校验（每秒更新一次）
+            setInterval(updateFingerprint, 1000);
         });
+
+        // 切换锁定状态
+        function toggleLock(lockId) {
+            locks[lockId] = !locks[lockId];
+            const element = document.getElementById(lockId);
+            if (locks[lockId]) {
+                element.classList.add('locked');
+            } else {
+                element.classList.remove('locked');
+            }
+        }
+
+        // 重新生成（基于当前配置）
+        function regenerate() {
+            if (!locks.lockUA) randomizeUA();
+            if (!locks.lockWebGL) randomizeWebGL();
+            if (!locks.lockFonts) randomizeFonts();
+            updateFingerprint();
+            showSuccess('指纹已重新生成');
+        }
 
         // 加载分组
         function loadGroups() {
-            $.ajax({
+            return $.ajax({
                 url: '@Url.Action("GetGroups", "Browser")',
                 method: 'GET',
                 success: function(response) {
@@ -294,6 +484,63 @@
             });
         }
 
+        // 加载浏览器数据（编辑模式）
+        function loadBrowserData(id) {
+            $.ajax({
+                url: '@Url.Action("GetBrowserDetail")' + '?id=' + id,
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        const data = response.data;
+                        
+                        // 基本信息
+                        $('#browserName').val(data.name || '');
+                        $('#browserNotes').val(data.notes || '');
+                        $('#browserGroup').val(data.groupId || '');
+                        
+                        // 浏览器配置
+                        $('#browserEngine').val(data.engine || 'UndetectedChrome');
+                        $('#browserOS').val(data.os || 'Windows');
+                        $('#browserResolution').val((data.viewportWidth || 1920) + 'x' + (data.viewportHeight || 1080));
+                        $('#browserLocale').val(data.locale || 'zh-CN');
+                        $('#persistence').prop('checked', data.enablePersistence !== false);
+                        
+                        // 指纹特征
+                        $('#userAgent').val(data.userAgent || '');
+                        $('#platform').val(data.platform || 'Win32');
+                        $('#timezone').val(data.timezone || 'Asia/Shanghai');
+                        $('#cpuCores').val(data.hardwareConcurrency || 8);
+                        $('#memory').val(data.deviceMemory || 8);
+                        $('#touchPoints').val(data.maxTouchPoints || 0);
+                        $('#webglVendor').val(data.webglVendor || '');
+                        $('#webglRenderer').val(data.webglRenderer || '');
+                        
+                        // 字体列表
+                        if (data.fontsJson) {
+                            try {
+                                const fonts = JSON.parse(data.fontsJson);
+                                $('#fontsList').val(fonts.join(', '));
+                            } catch (e) {
+                                $('#fontsList').val('');
+                            }
+                        }
+                        
+                        // 代理配置
+                        $('#proxyMode').val(data.proxyMode || 'none');
+                        $('#proxyUrl').val(data.proxyApiUrl || '');
+                        
+                        // 更新指纹评分
+                        updateFingerprint();
+                    } else {
+                        showError(response.error || '加载失败');
+                    }
+                },
+                error: function() {
+                    showError('加载浏览器信息失败');
+                }
+            });
+        }
+
         // 保存浏览器
         function saveBrowser() {
             // 解析分辨率
@@ -309,7 +556,7 @@
             const data = {
                 name: $('#browserName').val(),
                 notes: $('#browserNotes').val(),
-                groupId: $('#browserGroup').val() || null,
+                groupId: parseInt($('#browserGroup').val()) || null,
                 // 浏览器配置
                 engine: $('#browserEngine').val(),
                 os: $('#browserOS').val(),
@@ -328,126 +575,482 @@
                 webGLVendor: $('#webglVendor').val(),
                 webGLRenderer: $('#webglRenderer').val(),
                 fontsJson: fontsJson,
+                languagesJson: $('#languagesJson').val(),
+                pluginsJson: $('#pluginsJson').val(),
+                secChUa: $('#secChUa').val(),
+                secChUaPlatform: $('#secChUaPlatform').val(),
                 // 代理配置
                 proxyMode: $('#proxyMode').val(),
                 proxyApiUrl: $('#proxyUrl').val()
             };
 
+            const url = isEditMode ? '@Url.Action("UpdateBrowser")' + '?id=' + browserId : '@Url.Action("CreateBrowser")';
+            const method = isEditMode ? 'PUT' : 'POST';
+            const successMsg = isEditMode ? '保存成功' : '浏览器创建成功';
+
             $.ajax({
-                url: '@Url.Action("CreateBrowser")',
-                method: 'POST',
+                url: url,
+                method: method,
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 success: function(response) {
                     if (response.success) {
-                        showSuccess('浏览器创建成功');
-                        setTimeout(() => {
-                            window.location.href = '@Url.Action("Index")';
-                        }, 1000);
+                        showSuccess(successMsg);
+                        // 通知父窗口保存成功
+                        if (window.parent !== window) {
+                            window.parent.postMessage({
+                                type: 'browserSaved',
+                                message: successMsg
+                            }, '*');
+                        } else {
+                            // 如果不在 iframe 中，跳转到列表页
+                            setTimeout(() => {
+                                window.location.href = '@Url.Action("Index")';
+                            }, 1000);
+                        }
                     } else {
-                        showError(response.error || '创建失败');
+                        showError(response.error || (isEditMode ? '保存失败' : '创建失败'));
                     }
                 },
                 error: function() {
-                    showError('创建失败，请稍后重试');
+                    showError(isEditMode ? '保存失败，请稍后重试' : '创建失败，请稍后重试');
                 }
             });
         }
 
-        // 更新指纹评分
+        // 更新指纹评分（与 WPF 逻辑完全一致）
         function updateFingerprint() {
-            let score = 0;
-            
-            // User Agent 评分
-            const ua = $('#userAgent').val();
-            const uaScore = ua && ua.length > 50 ? 25 : 0;
-            score += uaScore;
-            $('#uaScore').text(uaScore + '%');
-            
-            // Platform 评分
-            const platform = $('#platform').val();
-            const platformScore = platform ? 15 : 0;
-            score += platformScore;
-            $('#platformScore').text(platformScore + '%');
-            
-            // Hardware 评分
-            const cpuCores = parseInt($('#cpuCores').val()) || 0;
-            const memory = parseInt($('#memory').val()) || 0;
-            const hardwareScore = (cpuCores > 0 && memory > 0) ? 20 : 0;
-            score += hardwareScore;
-            $('#hardwareScore').text(hardwareScore + '%');
-            
-            // WebGL 评分
-            const webgl = $('#webglVendor').val() && $('#webglRenderer').val();
-            const webglScore = webgl ? 20 : 0;
-            score += webglScore;
-            $('#webglScore').text(webglScore + '%');
-            
-            // Fonts 评分
-            const fonts = $('#fontsList').val();
-            const fontCount = fonts ? fonts.split(',').length : 0;
-            const fontsScore = fontCount > 5 ? 20 : (fontCount > 0 ? 10 : 0);
-            score += fontsScore;
-            $('#fontsScore').text(fontsScore + '%');
-            $('#fontsCount').text(fontCount + ' 个字体');
-            
-            // 更新总分
-            $('#totalScore').text(score);
-            $('#scoreBar').css('width', score + '%');
-            
-            // 风险等级
-            let riskLevel = '未评估';
-            let alertClass = 'alert-info';
-            if (score >= 80) {
-                riskLevel = '✅ 低风险 (推荐)';
-                alertClass = 'alert-success';
-            } else if (score >= 60) {
-                riskLevel = '⚠️ 中风险';
-                alertClass = 'alert-warning';
-            } else if (score > 0) {
-                riskLevel = '❌ 高风险';
-                alertClass = 'alert-danger';
+            try {
+                // 创建临时 Profile 用于校验
+                const tempProfile = {
+                    userAgent: $('#userAgent').val() || '',
+                    platform: $('#platform').val() || '',
+                    timezone: $('#timezone').val() || '',
+                    locale: $('#browserLocale').val() || 'zh-CN',
+                    hardwareConcurrency: parseInt($('#cpuCores').val()) || 8,
+                    deviceMemory: parseInt($('#memory').val()) || 8,
+                    maxTouchPoints: parseInt($('#touchPoints').val()) || 0,
+                    webglVendor: $('#webglVendor').val() || '',
+                    webglRenderer: $('#webglRenderer').val() || '',
+                    languagesJson: $('#languagesJson').val() || '',
+                    pluginsJson: $('#pluginsJson').val() || '',
+                    secChUa: $('#secChUa').val() || '',
+                    secChUaPlatform: $('#secChUaPlatform').val() || ''
+                };
+
+                // 一致性检查
+                const consistencyScore = checkConsistency(tempProfile);
+                $('#consistencyBar').css('width', consistencyScore + '%');
+                $('#consistencyText').text(consistencyScore);
+
+                // 真实性检查
+                const realismScore = checkRealism(tempProfile);
+                $('#realismBar').css('width', realismScore + '%');
+                $('#realismText').text(realismScore);
+
+                // Cloudflare 风险检查
+                const cloudflareRisk = checkCloudflareRisk(tempProfile);
+                $('#cloudflareBar').css('width', cloudflareRisk + '%');
+                $('#cloudflareText').text(cloudflareRisk);
+
+                // 计算总分
+                const totalScore = Math.round((consistencyScore + realismScore + (100 - cloudflareRisk)) / 3);
+                $('#totalScore').text(totalScore);
+                $('#scoreBar').css('width', totalScore + '%');
+
+                // 风险等级
+                let riskLevel = '未评估';
+                if (totalScore >= 90) {
+                    riskLevel = '✅ 安全';
+                } else if (totalScore >= 70) {
+                    riskLevel = '⚠️ 低风险';
+                } else if (totalScore >= 50) {
+                    riskLevel = '⚠️ 中风险';
+                } else {
+                    riskLevel = '❌ 高风险';
+                }
+                $('#riskLevel').text('风险等级: ' + riskLevel);
+
+                // 生成建议
+                const recommendations = generateRecommendations(tempProfile, consistencyScore, realismScore, cloudflareRisk);
+                if (recommendations.length > 0) {
+                    $('#recommendations').html(recommendations.map(r => `<div class="recommendation-item">${r}</div>`).join(''));
+                } else {
+                    $('#recommendations').html('<small class="text-success">✅ 指纹配置良好，无需优化</small>');
+                }
+
+                // 更新指纹预览
+                const fontCount = tempProfile.languagesJson ? tempProfile.languagesJson.split(',').filter(f => f.trim()).length : 0;
+                const preview = `User-Agent: ${tempProfile.userAgent}
+Platform: ${tempProfile.platform}
+Timezone: ${tempProfile.timezone}
+Locale: ${tempProfile.locale}
+Hardware: ${tempProfile.hardwareConcurrency} cores, ${tempProfile.deviceMemory} GB
+WebGL: ${tempProfile.webglVendor}
+  Renderer: ${tempProfile.webglRenderer}
+Touch Points: ${tempProfile.maxTouchPoints}${tempProfile.secChUa ? '\nSec-CH-UA: ' + tempProfile.secChUa : ''}`;
+                $('#fingerprintPreview').text(preview);
+
+                // 更新字体计数
+                const fonts = $('#fontsList').val();
+                const fontsCount = fonts ? fonts.split(',').filter(f => f.trim()).length : 0;
+                $('#fontsCount').text(fontsCount + ' 个字体');
+            } catch (ex) {
+                console.error('校验失败:', ex);
             }
-            
-            $('#riskLevel').removeClass('alert-info alert-success alert-warning alert-danger').addClass(alertClass);
-            $('#riskLevel').html(`<strong>风险等级:</strong> ${riskLevel}`);
         }
 
-        // 完全随机
-        function fullyRandomize() {
-            randomizeUA();
-            randomizeWebGL();
-            randomizeFonts();
-            updateFingerprint();
+        // 一致性检查（与 WPF 逻辑完全一致）
+        function checkConsistency(profile) {
+            const checks = [];
+
+            // UA与Platform一致性（智能检查）
+            let uaPlatformMatch = false;
+            if (profile.platform === 'Win32' && profile.userAgent.toLowerCase().includes('windows'))
+                uaPlatformMatch = true;
+            else if (profile.platform === 'MacIntel' && profile.userAgent.toLowerCase().includes('macintosh'))
+                uaPlatformMatch = true;
+            else if (profile.platform.toLowerCase().includes('linux') && profile.userAgent.toLowerCase().includes('linux'))
+                uaPlatformMatch = true;
+            else if (profile.userAgent.toLowerCase().includes('android'))
+                uaPlatformMatch = true;
+            else if (profile.userAgent.toLowerCase().includes('iphone') || profile.userAgent.toLowerCase().includes('ipad'))
+                uaPlatformMatch = true;
+            checks.push(uaPlatformMatch);
+
+            // Platform与SecChUA一致性
+            checks.push(!profile.secChUaPlatform || profile.secChUaPlatform.toLowerCase().includes(profile.platform.toLowerCase()));
+
+            // Locale与Languages一致性
+            checks.push(!profile.languagesJson || profile.languagesJson.toLowerCase().includes(profile.locale.toLowerCase()));
+
+            const passedChecks = checks.filter(c => c).length;
+            return Math.round((passedChecks * 100) / checks.length);
         }
 
-        // 随机 User Agent
-        function randomizeUA() {
-            const uas = [
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            ];
-            $('#userAgent').val(uas[Math.floor(Math.random() * uas.length)]);
-            updateFingerprint();
+        // 真实性检查（与 WPF 逻辑完全一致）
+        function checkRealism(profile) {
+            const scores = [];
+
+            // Chrome版本检查（120-141 都是有效的现代版本）
+            const chromeVersion = extractChromeVersion(profile.userAgent);
+            if (chromeVersion) {
+                if (chromeVersion >= 120 && chromeVersion <= 141)
+                    scores.push(100); // 最新版本
+                else if (chromeVersion >= 100 && chromeVersion < 120)
+                    scores.push(85); // 较新版本
+                else if (chromeVersion >= 80 && chromeVersion < 100)
+                    scores.push(70); // 旧版本
+                else
+                    scores.push(50); // 过时版本
+            } else {
+                scores.push(60); // 无法识别版本
+            }
+
+            // 硬件配置检查
+            scores.push((profile.hardwareConcurrency >= 8 && profile.hardwareConcurrency <= 16) ? 100 : 70);
+
+            // GPU检查
+            scores.push(profile.webglVendor ? 100 : 50);
+
+            // 防检测数据检查
+            scores.push((profile.pluginsJson && profile.languagesJson && profile.secChUa) ? 100 : 60);
+
+            return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
         }
 
-        // 随机 WebGL
-        function randomizeWebGL() {
-            const vendors = ['Google Inc.', 'Apple Inc.', 'NVIDIA Corporation'];
-            const renderers = ['ANGLE (Intel HD Graphics)', 'ANGLE (NVIDIA GeForce GTX 1080)', 'Apple M1'];
-            $('#webglVendor').val(vendors[Math.floor(Math.random() * vendors.length)]);
-            $('#webglRenderer').val(renderers[Math.floor(Math.random() * renderers.length)]);
-            updateFingerprint();
+        // Cloudflare 风险检查（与 WPF 逻辑完全一致）
+        function checkCloudflareRisk(profile) {
+            let risk = 0;
+
+            // HeadlessChrome标志
+            if (profile.userAgent.toLowerCase().includes('headlesschrome'))
+                risk += 30;
+
+            // 防检测数据缺失
+            if (!profile.pluginsJson) risk += 20;
+            if (!profile.languagesJson) risk += 20;
+            if (!profile.secChUa) risk += 20;
+
+            // 触摸点数异常（桌面设备不应有触摸点）
+            if (profile.maxTouchPoints > 0 && !profile.userAgent.toLowerCase().includes('mobile')) 
+                risk += 10;
+
+            return Math.min(risk, 100);
         }
 
-        // 随机字体
-        function randomizeFonts() {
-            const allFonts = ['Arial', 'Verdana', 'Times New Roman', 'Courier New', 'Georgia', 'Palatino', 'Garamond', 'Bookman', 'Comic Sans MS', 'Trebuchet MS', 'Impact', 'Lucida Console', 'Tahoma', 'Lucida Grande', 'Segoe UI'];
-            const shuffled = allFonts.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 8) + 3);
-            $('#fontsList').val(shuffled.join(', '));
-            updateFingerprint();
+        // 生成建议（与 WPF 逻辑完全一致）
+        function generateRecommendations(profile, consistency, realism, risk) {
+            const recommendations = [];
+
+            if (consistency < 90)
+                recommendations.push('一致性较低：检查 UA、Platform、Locale 是否匹配');
+
+            if (realism < 80)
+                recommendations.push('真实性不足：建议使用 Chrome 141+ 版本');
+
+            if (!profile.webglVendor)
+                recommendations.push('缺少 WebGL 配置：建议添加 GPU 信息');
+
+            if (!profile.pluginsJson)
+                recommendations.push('缺少 Plugins 数据：点击「完全随机」生成');
+
+            if (risk > 30)
+                recommendations.push('Cloudflare 风险较高：检查防检测数据完整性');
+
+            if (profile.maxTouchPoints > 0 && !profile.userAgent.toLowerCase().includes('mobile'))
+                recommendations.push('桌面设备触摸点应为 0');
+
+            return recommendations;
+        }
+
+        // 从 User-Agent 提取 Chrome 版本号
+        function extractChromeVersion(userAgent) {
+            try {
+                const match = userAgent.match(/Chrome\/(\d+)\./);
+                if (match && match[1]) {
+                    return parseInt(match[1]);
+                }
+            } catch (ex) {}
+            return null;
+        }
+
+        // 完全随机（与 WPF 逻辑完全一致）
+        async function fullyRandomize() {
+            try {
+                // 检查是否固定浏览器配置
+                if (!$('#lockBrowserConfig').is(':checked')) {
+                    // 随机选择操作系统（包括移动端）
+                    const osList = ['Windows', 'MacOS', 'Linux', 'Android', 'iOS'];
+                    const selectedOS = osList[Math.floor(Math.random() * osList.length)];
+                    $('#browserOS').val(selectedOS);
+
+                    // 根据操作系统随机选择合适的分辨率
+                    let resolutions;
+                    if (selectedOS === 'Android') {
+                        resolutions = ['360x800', '412x915', '1080x2400'];
+                    } else if (selectedOS === 'iOS') {
+                        resolutions = ['390x844', '393x852', '428x926', '820x1180', '1024x1366'];
+                    } else {
+                        resolutions = ['1920x1080', '1366x768', '1280x720', '2560x1440', '3840x2160'];
+                    }
+                    const selectedRes = resolutions[Math.floor(Math.random() * resolutions.length)];
+                    $('#browserResolution').val(selectedRes);
+
+                    // 随机选择语言
+                    const locales = ['zh-CN', 'en-US', 'ja-JP', 'ko-KR'];
+                    const selectedLocale = locales[Math.floor(Math.random() * locales.length)];
+                    $('#browserLocale').val(selectedLocale);
+                }
+
+                // 获取当前操作系统
+                const os = $('#browserOS').val();
+
+                // 生成基础指纹
+                await generateFingerprintBasedOnConfig();
+
+                // 调用独立的随机功能（检查固定状态）
+                if (!locks.lockUA) {
+                    await randomizeUA();
+                }
+
+                if (!locks.lockWebGL) {
+                    await randomizeWebGL();
+                }
+
+                if (!locks.lockFonts) {
+                    await randomizeFonts();
+                }
+
+                updateFingerprint();
+                showSuccess('✅ 已生成完全随机指纹');
+            } catch (ex) {
+                console.error('生成随机指纹失败:', ex);
+                showError('生成随机指纹失败: ' + ex.message);
+            }
+        }
+
+        // 基于配置生成指纹（与 WPF 逻辑完全一致）
+        async function generateFingerprintBasedOnConfig() {
+            try {
+                const os = $('#browserOS').val();
+                const locale = $('#browserLocale').val();
+                const resolution = $('#browserResolution').val().split('x');
+                const width = parseInt(resolution[0]) || 1920;
+                const height = parseInt(resolution[1]) || 1080;
+
+                // 生成 User-Agent（使用真实 Chrome 版本）
+                const chromeVersion = 141;
+                const userAgent = generateUserAgent(os, chromeVersion);
+                $('#userAgent').val(userAgent);
+
+                // 生成 Platform
+                const platform = {
+                    'Windows': 'Win32',
+                    'MacOS': 'MacIntel',
+                    'Linux': 'Linux x86_64',
+                    'Android': 'Linux armv8l',
+                    'iOS': 'iPhone'
+                }[os] || 'Win32';
+                $('#platform').val(platform);
+
+                // 生成 Timezone
+                const timezone = {
+                    'zh-CN': 'Asia/Shanghai',
+                    'en-US': 'America/New_York',
+                    'ja-JP': 'Asia/Tokyo',
+                    'ko-KR': 'Asia/Seoul'
+                }[locale] || 'Asia/Shanghai';
+                $('#timezone').val(timezone);
+
+                // 生成硬件配置（根据 OS 使用真实配置）
+                if (os === 'iOS') {
+                    const iosCores = [4, 6];
+                    const iosMemory = [4, 6, 8];
+                    $('#cpuCores').val(iosCores[Math.floor(Math.random() * iosCores.length)]);
+                    $('#memory').val(iosMemory[Math.floor(Math.random() * iosMemory.length)]);
+                    $('#touchPoints').val(5);
+                } else if (os === 'Android') {
+                    const androidCores = [4, 6, 8];
+                    const androidMemory = [4, 6, 8, 12];
+                    $('#cpuCores').val(androidCores[Math.floor(Math.random() * androidCores.length)]);
+                    $('#memory').val(androidMemory[Math.floor(Math.random() * androidMemory.length)]);
+                    $('#touchPoints').val(Math.floor(Math.random() * 6) + 5);
+                } else {
+                    const commonCores = [4, 6, 8, 12, 16];
+                    const commonMemory = [8, 16, 32];
+                    $('#cpuCores').val(commonCores[Math.floor(Math.random() * commonCores.length)]);
+                    $('#memory').val(commonMemory[Math.floor(Math.random() * commonMemory.length)]);
+                    $('#touchPoints').val(0);
+                }
+
+                // WebGL 配置（如果为空则使用数据库随机生成）
+                if (!$('#webglVendor').val() || !$('#webglRenderer').val()) {
+                    await randomizeWebGL();
+                }
+
+                // 生成防检测数据
+                await generateAntiDetectionData();
+
+                updateFingerprint();
+            } catch (ex) {
+                console.error('生成指纹失败:', ex);
+                showError('生成指纹失败: ' + ex.message);
+            }
+        }
+
+        // 生成 User-Agent
+        function generateUserAgent(os, chromeVersion) {
+            const templates = {
+                'Windows': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion}.0.0.0 Safari/537.36`,
+                'MacOS': `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion}.0.0.0 Safari/537.36`,
+                'Linux': `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion}.0.0.0 Safari/537.36`,
+                'Android': `Mozilla/5.0 (Linux; Android 13; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion}.0.0.0 Mobile Safari/537.36`,
+                'iOS': `Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1`
+            };
+            return templates[os] || templates['Windows'];
+        }
+
+        // 随机 User Agent（使用真实的 Chrome 版本数据库）
+        async function randomizeUA() {
+            try {
+                const os = $('#browserOS').val();
+                
+                const response = await $.ajax({
+                    url: '@Url.Action("GetChromeVersion", "FingerprintData")?os=' + os,
+                    method: 'GET'
+                });
+
+                if (response.success && response.data) {
+                    const chromeVersion = response.data.version;
+                    const userAgent = generateUserAgent(os, chromeVersion.split('.')[0]);
+                    $('#userAgent').val(userAgent);
+                    updateFingerprint();
+                } else {
+                    throw new Error(response.error || '获取 Chrome 版本失败');
+                }
+            } catch (ex) {
+                console.error('随机 UA 失败:', ex);
+                showError('随机 User-Agent 失败');
+            }
+        }
+
+        // 随机 WebGL（使用 GPU 数据库）
+        async function randomizeWebGL() {
+            try {
+                const os = $('#browserOS').val();
+                
+                const response = await $.ajax({
+                    url: '@Url.Action("GetGpu", "FingerprintData")?os=' + os + '&count=1',
+                    method: 'GET'
+                });
+
+                if (response.success && response.data && response.data.length > 0) {
+                    const gpu = response.data[0];
+                    $('#webglVendor').val(gpu.vendor);
+                    $('#webglRenderer').val(gpu.renderer);
+                    updateFingerprint();
+                } else {
+                    throw new Error(response.error || '获取 GPU 配置失败');
+                }
+            } catch (ex) {
+                console.error('随机 WebGL 失败:', ex);
+                showError('随机 WebGL 失败');
+            }
+        }
+
+        // 随机字体（使用字体服务）
+        async function randomizeFonts() {
+            try {
+                const os = $('#browserOS').val();
+                const osKey = os.toLowerCase();
+                const count = Math.floor(Math.random() * 21) + 30; // 30-50
+                
+                const response = await $.ajax({
+                    url: '@Url.Action("GetFonts", "FingerprintData")?os=' + osKey + '&count=' + count,
+                    method: 'GET'
+                });
+
+                if (response.success && response.data) {
+                    $('#fontsList').val(response.data.join(', '));
+                    updateFingerprint();
+                } else {
+                    throw new Error(response.error || '获取字体列表失败');
+                }
+            } catch (ex) {
+                console.error('随机字体失败:', ex);
+                showError('随机字体失败');
+            }
+        }
+
+        // 生成防检测数据（Languages, Plugins, Sec-CH-UA 等）
+        async function generateAntiDetectionData() {
+            try {
+                const requestData = {
+                    userAgent: $('#userAgent').val(),
+                    platform: $('#platform').val(),
+                    locale: $('#browserLocale').val(),
+                    hardwareConcurrency: parseInt($('#cpuCores').val()) || 8,
+                    deviceMemory: parseInt($('#memory').val()) || 8,
+                    maxTouchPoints: parseInt($('#touchPoints').val()) || 0
+                };
+
+                const response = await $.ajax({
+                    url: '@Url.Action("GenerateAntiDetection", "FingerprintData")',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(requestData)
+                });
+
+                if (response.success && response.data) {
+                    $('#languagesJson').val(response.data.languagesJson || '');
+                    $('#pluginsJson').val(response.data.pluginsJson || '');
+                    $('#secChUa').val(response.data.secChUa || '');
+                    $('#secChUaPlatform').val(response.data.secChUaPlatform || '');
+                }
+            } catch (ex) {
+                console.error('生成防检测数据失败:', ex);
+            }
         }
 
         // 显示成功消息
@@ -465,6 +1068,49 @@
                 toastr.error(message);
             } else {
                 alert('错误: ' + message);
+            }
+        }
+
+        // 删除浏览器
+        function deleteBrowserNow() {
+            if (!confirm('确定要删除这个浏览器吗？此操作不可撤销！')) return;
+
+            $.ajax({
+                url: '@Url.Action("DeleteBrowser")' + '?id=' + browserId,
+                method: 'DELETE',
+                success: function(data) {
+                    if (data.success) {
+                        showSuccess('删除成功');
+                        // 通知父窗口删除成功
+                        if (window.parent !== window) {
+                            window.parent.postMessage({
+                                type: 'browserSaved',
+                                message: '删除成功'
+                            }, '*');
+                        } else {
+                            // 如果不在 iframe 中，跳转到列表页
+                            setTimeout(() => {
+                                window.location.href = '@Url.Action("Index")';
+                            }, 1000);
+                        }
+                    } else {
+                        showError(data.error || '删除失败');
+                    }
+                },
+                error: function() {
+                    showError('删除失败');
+                }
+            });
+        }
+
+        // 取消编辑
+        function cancelEdit() {
+            if (window.parent !== window) {
+                // 在 iframe 中，通知父窗口关闭
+                window.parent.postMessage({ type: 'browserSaved' }, '*');
+            } else {
+                // 不在 iframe 中，直接跳转
+                window.location.href = '@Url.Action("Index")';
             }
         }
     </script>

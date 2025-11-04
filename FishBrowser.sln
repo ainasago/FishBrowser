@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FishBrowser.Api", "web\Fish
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FishBrowser.Web", "web\FishBrowser.Web\FishBrowser.Web.csproj", "{969E7BA6-F1A3-42D0-90A2-DE42446C7598}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "windows", "windows", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +106,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{E5D86ED9-C62B-8002-C62F-AB1D386EC646} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{D60ACF04-6E3C-5A50-A5C4-42176B8C94B5} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{584E72BC-2C7A-4F62-BAAF-D9F0A9330031} = {256F4E96-6A73-9ABE-786F-840C672A50F4}
 		{969E7BA6-F1A3-42D0-90A2-DE42446C7598} = {256F4E96-6A73-9ABE-786F-840C672A50F4}
 	EndGlobalSection
