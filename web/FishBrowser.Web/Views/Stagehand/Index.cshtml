@@ -1,0 +1,585 @@
+@{
+    ViewData["Title"] = "Stagehand AI 自动化框架";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Stagehand AI 自动化框架</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-robot mr-2"></i>
+                            Stagehand 状态
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" onclick="loadStatus()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="statusLoading" class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin fa-2x"></i>
+                            <p class="mt-2">正在加载状态...</p>
+                        </div>
+                        
+                        <div id="statusContent" style="display:none;">
+                            <!-- Node.js 环境 -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-info"><i class="fab fa-node-js"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Node.js</span>
+                                            <span class="info-box-number" id="nodeVersion">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-success"><i class="fab fa-npm"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">npm</span>
+                                            <span class="info-box-number" id="npmVersion">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stagehand 状态 -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="info-box">
+                                        <span class="info-box-icon" id="stagehandIcon">
+                                            <i class="fas fa-robot"></i>
+                                        </span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Stagehand 状态</span>
+                                            <span class="info-box-number" id="stagehandStatus">-</span>
+                                            <div class="progress" id="progressBar" style="display:none;">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 详细信息 -->
+                            <div class="row" id="detailsSection" style="display:none;">
+                                <div class="col-md-12">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 200px;">安装路径</th>
+                                            <td id="installPath">-</td>
+                                        </tr>
+                                        <tr>
+                                            <th>已安装版本</th>
+                                            <td id="installedVersion">-</td>
+                                        </tr>
+                                        <tr>
+                                            <th>最新版本</th>
+                                            <td id="latestVersion">-</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Playwright 依赖</th>
+                                            <td id="playwrightStatus">-</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <div class="row mt-3">
+                                <div class="card-body">
+                                    <button id="btnInstall" class="btn btn-primary mr-2" onclick="install()">
+                                        <i class="fas fa-download mr-1"></i> 安装 Stagehand
+                                    </button>
+                                    <button id="btnUpdate" class="btn btn-info mr-2" onclick="update()" style="display:none;">
+                                        <i class="fas fa-sync-alt mr-1"></i> 更新 Stagehand
+                                    </button>
+                                    <button id="btnTest" class="btn btn-success mr-2" onclick="test()" style="display:none;">
+                                        <i class="fas fa-vial mr-1"></i> 测试连接
+                                    </button>
+                                    <button id="btnUninstall" class="btn btn-danger mr-2" onclick="uninstall()" style="display:none;">
+                                        <i class="fas fa-trash mr-1"></i> 卸载 Stagehand
+                                    </button>
+                                    <button id="btnConfigMirror" class="btn btn-warning" onclick="configureMirror()">
+                                        <i class="fas fa-rocket mr-1"></i> 配置加速镜像
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 帮助信息 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            关于 Stagehand
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>什么是 Stagehand？</h5>
+                        <p>
+                            Stagehand 是一个基于 AI 的浏览器自动化框架，结合了自然语言和代码的能力，使网页自动化更加灵活、可维护和可靠。
+                        </p>
+                        
+                        <h5 class="mt-3">主要特点</h5>
+                        <ul>
+                            <li><strong>AI 驱动</strong>：使用自然语言描述操作，AI 自动理解并执行</li>
+                            <li><strong>代码控制</strong>：在需要精确控制时使用代码</li>
+                            <li><strong>自动缓存</strong>：记住之前的操作，节省时间和 Token</li>
+                            <li><strong>自我修复</strong>：网站变化时自动适应</li>
+                        </ul>
+
+                        <h5 class="mt-3">系统要求</h5>
+                        <ul>
+                            <li><strong>Node.js</strong>：v18 或更高版本（<a href="https://nodejs.org/" target="_blank">下载</a>）</li>
+                            <li><strong>npm</strong>：v8 或更高版本（随 Node.js 安装）</li>
+                            <li><strong>Playwright</strong>：自动安装为依赖</li>
+                            <li><strong>网络</strong>：需要访问 npm 仓库（可配置镜像源）</li>
+                        </ul>
+
+                        <h5 class="mt-3">⚡ 加速安装（可选）</h5>
+                        <p>如果安装速度慢或超时，可以配置 npm 使用国内镜像源：</p>
+                        <pre class="bg-light p-3"><code># 使用淘宝镜像
+npm config set registry https://registry.npmmirror.com
+
+# 验证配置
+npm config get registry
+
+# 恢复默认（如需要）
+npm config set registry https://registry.npmjs.org</code></pre>
+                        <div class="alert alert-warning mt-2">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            <strong>注意：</strong>首次安装可能需要 5-10 分钟，请耐心等待。如果超时，请配置镜像源后重试。
+                        </div>
+
+                        <h5 class="mt-3">使用示例</h5>
+                        <pre class="bg-light p-3"><code>const { Stagehand } = require('@@browserbasehq/stagehand');
+
+const stagehand = new Stagehand({ env: 'LOCAL' });
+await stagehand.init();
+
+// 使用 act() 执行单个操作
+await stagehand.act("点击登录按钮");
+
+// 使用 extract() 提取结构化数据
+const data = await stagehand.extract("提取文章标题和作者");
+
+await stagehand.close();</code></pre>
+
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-lightbulb mr-2"></i>
+                            <strong>提示：</strong>
+                            首次安装可能需要几分钟时间，因为需要下载 Playwright 浏览器。
+                        </div>
+
+                        <div class="mt-3">
+                            <a href="https://docs.stagehand.dev" target="_blank" class="btn btn-outline-primary">
+                                <i class="fas fa-book mr-1"></i> 查看官方文档
+                            </a>
+                            <a href="https://github.com/browserbase/stagehand" target="_blank" class="btn btn-outline-secondary ml-2">
+                                <i class="fab fa-github mr-1"></i> GitHub 仓库
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+let currentStatus = null;
+
+$(document).ready(function() {
+    loadStatus();
+});
+
+async function loadStatus() {
+    try {
+        $('#statusLoading').show();
+        $('#statusContent').hide();
+        
+        console.log('Loading status from:', '@Url.Action("GetStatus")');
+        
+        const resp = await fetch('@Url.Action("GetStatus")');
+        console.log('Response status:', resp.status, resp.statusText);
+        
+        if (!resp.ok) {
+            const errorText = await resp.text();
+            console.error('Error response:', errorText);
+            throw new Error(`加载状态失败: ${resp.status} ${resp.statusText}`);
+        }
+        
+        currentStatus = await resp.json();
+        console.log('Status loaded:', currentStatus);
+        displayStatus(currentStatus);
+        
+        $('#statusLoading').hide();
+        $('#statusContent').show();
+    } catch (e) {
+        console.error('Load status error:', e);
+        toastr.error('加载状态失败: ' + e.message, '错误', {
+            timeOut: 0,
+            closeButton: true
+        });
+        $('#statusLoading').hide();
+        $('#statusContent').show();
+        
+        // 显示错误状态
+        $('#stagehandIcon').removeClass().addClass('info-box-icon bg-danger');
+        $('#stagehandStatus').html('<span class="text-danger">加载失败</span><br><small>请查看控制台日志</small>');
+    }
+}
+
+function displayStatus(status) {
+    // Node.js 和 npm 版本
+    $('#nodeVersion').text(status.isNodeInstalled ? status.nodeVersion : '未安装');
+    $('#npmVersion').text(status.npmVersion || '-');
+    
+    // Stagehand 状态
+    const icon = $('#stagehandIcon');
+    const statusText = $('#stagehandStatus');
+    
+    if (!status.isNodeInstalled) {
+        icon.removeClass().addClass('info-box-icon bg-danger');
+        statusText.html('<span class="text-danger">Node.js 未安装</span><br><small>请先安装 Node.js</small>');
+        $('#btnInstall').hide();
+        return;
+    }
+    
+    if (status.isInstalled) {
+        icon.removeClass().addClass('info-box-icon bg-success');
+        statusText.html(`<span class="text-success">已安装</span><br><small>${status.versionDisplay}</small>`);
+        
+        $('#detailsSection').show();
+        $('#installPath').text(status.installPath || '-');
+        $('#installedVersion').text(status.installedVersion || '-');
+        $('#latestVersion').text(status.latestVersion || '-');
+        $('#playwrightStatus').html(status.playwrightInstalled 
+            ? '<span class="badge badge-success">已安装</span>' 
+            : '<span class="badge badge-warning">未安装</span>');
+        
+        $('#btnInstall').hide();
+        $('#btnUpdate').show();
+        $('#btnTest').show();
+        $('#btnUninstall').show();
+        
+        if (status.hasUpdate) {
+            toastr.info(`有新版本可用: ${status.latestVersion}`);
+        }
+    } else {
+        icon.removeClass().addClass('info-box-icon bg-warning');
+        statusText.html('<span class="text-warning">未安装</span>');
+        
+        $('#detailsSection').hide();
+        $('#btnInstall').show();
+        $('#btnUpdate').hide();
+        $('#btnTest').hide();
+        $('#btnUninstall').hide();
+    }
+}
+
+async function install() {
+    if (!confirm('确定要安装 Stagehand 吗？\n\n⚠️ 首次安装可能需要 5-10 分钟\n• 下载 Stagehand 包\n• 安装 Playwright 浏览器（如未安装）\n\n请耐心等待，不要关闭页面。')) return;
+    
+    try {
+        $('#btnInstall').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> 安装中...');
+        $('#progressBar').show();
+        
+        // 显示详细的进度提示
+        const progressToast = toastr.info(
+            '正在安装 Stagehand...<br>' +
+            '<small>• 正在下载 npm 包<br>' +
+            '• 这可能需要 5-10 分钟<br>' +
+            '• 请不要关闭页面</small>', 
+            '安装中', 
+            { 
+                timeOut: 0, 
+                extendedTimeOut: 0,
+                closeButton: false,
+                progressBar: true
+            }
+        );
+        
+        const resp = await fetch('@Url.Action("Install")', { method: 'POST' });
+        const result = await resp.json();
+        
+        if (!resp.ok || !result.success) {
+            throw new Error(result.error || '安装失败');
+        }
+        
+        toastr.clear();
+        toastr.success('Stagehand 安装成功！<br><small>可以在「系统设置 → 系统日志」查看详细日志</small>', '成功', { timeOut: 5000 });
+        await loadStatus();
+    } catch (e) {
+        toastr.clear();
+        const errorMsg = e.message || '安装失败';
+        let helpText = '';
+        
+        // 根据错误类型提供帮助信息
+        if (errorMsg.includes('timeout') || errorMsg.includes('超时')) {
+            helpText = '<br><br><strong>可能的原因：</strong><br>' +
+                       '• 网络速度较慢<br>' +
+                       '• npm 仓库连接超时<br>' +
+                       '<br><strong>建议：</strong><br>' +
+                       '• 检查网络连接<br>' +
+                       '• 配置 npm 镜像源<br>' +
+                       '• 查看系统日志了解详情';
+        } else if (errorMsg.includes('npm') || errorMsg.includes('node')) {
+            helpText = '<br><br><strong>建议：</strong><br>' +
+                       '• 确认 Node.js 已安装<br>' +
+                       '• 确认 npm 在 PATH 中<br>' +
+                       '• 运行 test-npm.ps1 检查环境';
+        }
+        
+        toastr.error(errorMsg + helpText, '安装失败', { 
+            timeOut: 0, 
+            closeButton: true,
+            progressBar: false,
+            enableHtml: true
+        });
+        console.error('Installation error:', e);
+    } finally {
+        $('#btnInstall').prop('disabled', false).html('<i class="fas fa-download mr-1"></i> 安装 Stagehand');
+        $('#progressBar').hide();
+    }
+}
+
+async function update() {
+    if (!confirm('确定要更新 Stagehand 吗？')) return;
+    
+    try {
+        $('#btnUpdate').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> 更新中...');
+        $('#progressBar').show();
+        
+        toastr.info('正在更新 Stagehand，请稍候...', '更新中', { timeOut: 0, extendedTimeOut: 0 });
+        
+        const resp = await fetch('@Url.Action("Update")', { method: 'POST' });
+        const result = await resp.json();
+        
+        if (!resp.ok || !result.success) {
+            throw new Error(result.error || '更新失败');
+        }
+        
+        toastr.clear();
+        toastr.success('Stagehand 更新成功！');
+        await loadStatus();
+    } catch (e) {
+        toastr.clear();
+        toastr.error(e.message || '更新失败', '错误', { 
+            timeOut: 0, 
+            closeButton: true,
+            progressBar: false
+        });
+        console.error('Update error:', e);
+    } finally {
+        $('#btnUpdate').prop('disabled', false).html('<i class="fas fa-sync-alt mr-1"></i> 更新 Stagehand');
+        $('#progressBar').hide();
+    }
+}
+
+async function uninstall() {
+    if (!confirm('确定要卸载 Stagehand 吗？\n\n这将删除 Stagehand 及其配置。')) return;
+    
+    try {
+        $('#btnUninstall').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> 卸载中...');
+        $('#progressBar').show();
+        
+        toastr.info('正在卸载 Stagehand，请稍候...', '卸载中', { timeOut: 0, extendedTimeOut: 0 });
+        
+        const resp = await fetch('@Url.Action("Uninstall")', { method: 'POST' });
+        const result = await resp.json();
+        
+        if (!resp.ok || !result.success) {
+            throw new Error(result.error || '卸载失败');
+        }
+        
+        toastr.clear();
+        toastr.success('Stagehand 卸载成功！');
+        await loadStatus();
+    } catch (e) {
+        toastr.clear();
+        toastr.error(e.message || '卸载失败', '错误', { 
+            timeOut: 0, 
+            closeButton: true,
+            progressBar: false
+        });
+        console.error('Uninstall error:', e);
+    } finally {
+        $('#btnUninstall').prop('disabled', false).html('<i class="fas fa-trash mr-1"></i> 卸载 Stagehand');
+        $('#progressBar').hide();
+    }
+}
+
+async function test() {
+    try {
+        $('#btnTest').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> 测试中...');
+        
+        toastr.info('正在测试 Stagehand，请稍候...');
+        
+        const resp = await fetch('@Url.Action("Test")', { method: 'POST' });
+        if (!resp.ok) throw new Error('测试失败');
+        
+        const result = await resp.json();
+        if (result.success) {
+            toastr.success('Stagehand 测试通过！');
+        } else {
+            toastr.error('Stagehand 测试失败');
+        }
+    } catch (e) {
+        toastr.error('测试失败: ' + e.message);
+    } finally {
+        $('#btnTest').prop('disabled', false).html('<i class="fas fa-vial mr-1"></i> 测试连接');
+    }
+}
+
+function configureMirror() {
+    const mirrorOptions = `
+        <div class="text-left">
+            <h5>选择 npm 镜像源：</h5>
+            <div class="form-group">
+                <div class="custom-control custom-radio">
+                    <input type="radio" id="mirrorTaobao" name="mirror" class="custom-control-input" value="https://registry.npmmirror.com" checked>
+                    <label class="custom-control-label" for="mirrorTaobao">
+                        <strong>淘宝镜像</strong> (推荐，国内最快)<br>
+                        <small class="text-muted">https://registry.npmmirror.com</small>
+                    </label>
+                </div>
+                <div class="custom-control custom-radio mt-2">
+                    <input type="radio" id="mirrorTencent" name="mirror" class="custom-control-input" value="https://mirrors.cloud.tencent.com/npm/">
+                    <label class="custom-control-label" for="mirrorTencent">
+                        <strong>腾讯云镜像</strong><br>
+                        <small class="text-muted">https://mirrors.cloud.tencent.com/npm/</small>
+                    </label>
+                </div>
+                <div class="custom-control custom-radio mt-2">
+                    <input type="radio" id="mirrorHuawei" name="mirror" class="custom-control-input" value="https://repo.huaweicloud.com/repository/npm/">
+                    <label class="custom-control-label" for="mirrorHuawei">
+                        <strong>华为云镜像</strong><br>
+                        <small class="text-muted">https://repo.huaweicloud.com/repository/npm/</small>
+                    </label>
+                </div>
+                <div class="custom-control custom-radio mt-2">
+                    <input type="radio" id="mirrorDefault" name="mirror" class="custom-control-input" value="https://registry.npmjs.org">
+                    <label class="custom-control-label" for="mirrorDefault">
+                        <strong>官方镜像</strong> (默认，国外)<br>
+                        <small class="text-muted">https://registry.npmjs.org</small>
+                    </label>
+                </div>
+            </div>
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle mr-2"></i>
+                <strong>说明：</strong>配置镜像后，npm 下载速度会大幅提升。
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary" onclick="applyMirror()">
+                    <i class="fas fa-check mr-1"></i> 应用配置
+                </button>
+                <button class="btn btn-secondary ml-2" onclick="closeMirrorDialog()">
+                    取消
+                </button>
+            </div>
+        </div>
+    `;
+    
+    toastr.info(mirrorOptions, '配置 npm 镜像源', {
+        timeOut: 0,
+        closeButton: true,
+        progressBar: false,
+        enableHtml: true,
+        tapToDismiss: false,
+        positionClass: 'toast-top-center',
+        toastClass: 'toastr-mirror-config'
+    });
+}
+
+function closeMirrorDialog() {
+    toastr.clear();
+}
+
+async function applyMirror() {
+    const selectedMirror = document.querySelector('input[name="mirror"]:checked');
+    if (!selectedMirror) {
+        toastr.error('请选择一个镜像源');
+        return;
+    }
+    
+    const mirrorUrl = selectedMirror.value;
+    const mirrorName = selectedMirror.parentElement.querySelector('strong').textContent;
+    
+    toastr.clear();
+    toastr.info(`正在配置 ${mirrorName}...`, '配置中', { timeOut: 0 });
+    
+    try {
+        // 使用 PowerShell 执行 npm config
+        const command = `npm config set registry ${mirrorUrl}`;
+        
+        // 显示命令供用户手动执行
+        const instructions = `
+            <div class="text-left">
+                <p><strong>请在命令行中执行以下命令：</strong></p>
+                <pre class="bg-dark text-white p-3" style="border-radius: 5px;">${command}</pre>
+                <button class="btn btn-sm btn-secondary" onclick="copyToClipboard('${command}')">
+                    <i class="fas fa-copy mr-1"></i> 复制命令
+                </button>
+                <hr>
+                <p class="mt-3"><strong>或者运行配置脚本：</strong></p>
+                <pre class="bg-dark text-white p-3" style="border-radius: 5px;">cd d:\\1Dev\\webbrowser
+.\\configure-npm-mirror.ps1</pre>
+                <div class="alert alert-success mt-3">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    配置完成后，重新安装 Stagehand 即可享受加速下载！
+                </div>
+            </div>
+        `;
+        
+        toastr.clear();
+        toastr.success(instructions, '配置说明', {
+            timeOut: 0,
+            closeButton: true,
+            progressBar: false,
+            enableHtml: true,
+            positionClass: 'toast-top-center'
+        });
+    } catch (e) {
+        toastr.clear();
+        toastr.error('配置失败: ' + e.message, '错误', {
+            timeOut: 0,
+            closeButton: true
+        });
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        toastr.success('命令已复制到剪贴板！', '', { timeOut: 2000 });
+    }).catch(() => {
+        toastr.error('复制失败，请手动复制', '', { timeOut: 2000 });
+    });
+}
+</script>
+
+<style>
+.toastr-mirror-config {
+    width: 500px !important;
+    max-width: 90vw;
+}
+</style>
+}

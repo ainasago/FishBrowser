@@ -36,6 +36,11 @@ public partial class MainWindow : Window
         MainFrame.Navigate(new Uri("Views/TaskManagementView.xaml", UriKind.Relative));
     }
 
+    private void StagehandAITask_Click(object sender, RoutedEventArgs e)
+    {
+        MainFrame.Navigate(new StagehandTaskView());
+    }
+
     private void AITask_Click(object sender, RoutedEventArgs e)
     {
         MainFrame.Navigate(new Uri("Views/AITaskView.xaml", UriKind.Relative));

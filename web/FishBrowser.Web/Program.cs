@@ -17,7 +17,7 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpClient("FishBrowserApi", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5062");
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromMinutes(10);  // 增加到 10 分钟，用于长时间操作（如 npm install）
 });
 
 // 添加 HttpClientFactory 用于指纹数据 API 调用

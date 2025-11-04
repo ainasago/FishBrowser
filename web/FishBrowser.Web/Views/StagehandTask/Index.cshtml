@@ -1,0 +1,836 @@
+@{
+    ViewData["Title"] = "Stagehand AI 任务";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<style>
+    .stagehand-container {
+        display: flex;
+        height: calc(100vh - 120px);
+        gap: 20px;
+    }
+
+    .chat-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .script-section {
+        width: 420px;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .section-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .status-ready {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .status-warning {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    .status-error {
+        background: #ffebee;
+        color: #c62828;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .message {
+        margin-bottom: 16px;
+        animation: fadeIn 0.3s;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-user {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .message-ai {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .message-system {
+        display: flex;
+        justify-content: center;
+    }
+
+    .message-bubble {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        word-wrap: break-word;
+    }
+
+    .message-user .message-bubble {
+        background: #10a37f;
+        color: white;
+    }
+
+    .message-ai .message-bubble {
+        background: #f3f4f6;
+        color: #333;
+    }
+
+    .message-system .message-bubble {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #81c784;
+        max-width: 90%;
+    }
+
+    .examples-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+        margin: 16px 20px;
+    }
+
+    .example-card {
+        padding: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .example-card:hover {
+        border-color: #10a37f;
+        background: #f8f9fa;
+    }
+
+    .example-icon {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+
+    .example-name {
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .example-desc {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .chat-input-area {
+        padding: 16px 20px;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .input-wrapper {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+    }
+
+    .input-box {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid #e0e0e0;
+        border-radius: 24px;
+        resize: none;
+        max-height: 120px;
+        font-family: inherit;
+    }
+
+    .send-btn {
+        padding: 12px 24px;
+        background: #10a37f;
+        color: white;
+        border: none;
+        border-radius: 24px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+
+    .send-btn:hover {
+        background: #0d8b6d;
+    }
+
+    .send-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .script-preview {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+    }
+
+    .code-editor {
+        width: 100%;
+        height: 100%;
+        padding: 16px;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 13px;
+        resize: none;
+    }
+
+    .script-info {
+        padding: 16px;
+        background: #f8f9fa;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+
+    .info-label {
+        color: #666;
+    }
+
+    .script-actions {
+        padding: 16px;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: #10a37f;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #0d8b6d;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #333;
+        border: 1px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+        background: #f8f9fa;
+    }
+
+    .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #10a37f;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- 顶部状态栏 -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">🎭 Stagehand AI 任务</h4>
+            <small class="text-muted">AI 驱动的浏览器自动化脚本生成</small>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <select id="providerSelect" class="form-select" style="width: 200px;">
+                <option value="">选择 AI 提供商...</option>
+            </select>
+            <button class="btn btn-sm btn-outline-primary" onclick="showGeminiSettings()">
+                <i class="fas fa-key"></i> Gemini 设置
+            </button>
+            <span id="statusBadge" class="status-badge status-warning">
+                <span class="loading"></span>
+                <span>检查中...</span>
+            </span>
+        </div>
+    </div>
+    
+    <!-- Gemini API Key 设置面板 -->
+    <div id="geminiSettingsPanel" class="card mb-3" style="display: none;">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <strong><i class="fas fa-key"></i> Gemini API Key 配置</strong>
+                <button class="btn btn-sm btn-light" onclick="hideGeminiSettings()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info mb-3">
+                <i class="fas fa-info-circle"></i> 
+                <strong>为什么需要 Gemini API Key？</strong><br>
+                Stagehand 需要 AI 模型来理解网页结构和执行智能操作。设置后将作为环境变量传递给 Node.js 脚本。
+            </div>
+            
+            <div class="mb-3">
+                <label for="geminiApiKey" class="form-label">
+                    <strong>Gemini API Key</strong>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="ms-2 small">
+                        <i class="fas fa-external-link-alt"></i> 获取 API Key
+                    </a>
+                </label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="geminiApiKey" 
+                           placeholder="输入你的 Gemini API Key..." 
+                           value="">
+                    <button class="btn btn-outline-secondary" type="button" onclick="toggleApiKeyVisibility()">
+                        <i class="fas fa-eye" id="toggleIcon"></i>
+                    </button>
+                </div>
+                <small class="text-muted">
+                    API Key 将保存在浏览器本地存储中，不会上传到服务器
+                </small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="geminiModel" class="form-label"><strong>Gemini 模型</strong></label>
+                <select class="form-select" id="geminiModel">
+                    <option value="google/gemini-2.0-flash-exp">Gemini 2.0 Flash (推荐)</option>
+                    <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+                    <option value="google/gemini-1.5-pro">Gemini 1.5 Pro</option>
+                    <option value="google/gemini-1.5-flash">Gemini 1.5 Flash</option>
+                </select>
+                <small class="text-muted">
+                    推荐使用 Gemini 2.0 Flash，速度快且效果好
+                </small>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" onclick="saveGeminiSettings()">
+                    <i class="fas fa-save"></i> 保存设置
+                </button>
+                <button class="btn btn-outline-danger" onclick="clearGeminiSettings()">
+                    <i class="fas fa-trash"></i> 清除设置
+                </button>
+                <button class="btn btn-outline-secondary" onclick="testGeminiConnection()">
+                    <i class="fas fa-vial"></i> 测试连接
+                </button>
+            </div>
+            
+            <div id="geminiTestResult" class="mt-3" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="stagehand-container">
+        <!-- 左侧：对话区 -->
+        <div class="chat-section">
+            <div class="section-header">
+                <div>
+                    <strong>对话历史</strong>
+                    <small class="text-muted ms-2">描述你的任务需求</small>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="clearChat()">
+                    <i class="fas fa-trash"></i> 清空
+                </button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <!-- 欢迎消息 -->
+                <div class="message message-system">
+                    <div class="message-bubble">
+                        <div class="mb-2"><strong>👋 欢迎使用 Stagehand AI 任务助手</strong></div>
+                        <div class="small">
+                            我可以帮你创建基于 Stagehand 的网页自动化任务。用自然语言描述需求，我会生成可执行的 JavaScript 脚本。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快捷示例 -->
+                <div class="examples-grid" id="examplesGrid">
+                    <!-- 动态加载 -->
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <textarea id="userInput" class="input-box" placeholder="描述你的任务，例如：打开 GitHub，搜索 stagehand，点击第一个结果..." rows="2"></textarea>
+                    <button id="sendBtn" class="send-btn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane me-1"></i> 生成脚本
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：脚本预览区 -->
+        <div class="script-section">
+            <div class="section-header">
+                <strong>📝 脚本预览</strong>
+            </div>
+
+            <div class="script-preview">
+                <textarea id="scriptEditor" class="code-editor" placeholder="// 等待 AI 生成 Stagehand 脚本...
+// 你可以用自然语言描述任务需求"></textarea>
+            </div>
+
+            <div class="script-info">
+                <div class="info-row">
+                    <span class="info-label">操作数：</span>
+                    <span id="actionCount">0</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">预计时间：</span>
+                    <span id="estimatedTime">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">复杂度：</span>
+                    <span id="complexity">-</span>
+                </div>
+            </div>
+
+            <div class="script-actions">
+                <button class="action-btn btn-primary" onclick="executeScript()">
+                    <i class="fas fa-play me-1"></i> 运行脚本
+                </button>
+                <button class="action-btn btn-secondary" onclick="copyScript()">
+                    <i class="fas fa-copy me-1"></i> 复制脚本
+                </button>
+                <button class="action-btn btn-secondary" onclick="downloadScript()">
+                    <i class="fas fa-download me-1"></i> 导出为 .js
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let currentScript = '';
+let selectedProviderId = 0;
+
+$(document).ready(function() {
+    loadProviders();
+    loadStatus();
+    loadExamples();
+    loadGeminiSettings();
+    
+    // Enter 发送
+    $('#userInput').keydown(function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+});
+
+// 加载 AI 提供商
+async function loadProviders() {
+    try {
+        const resp = await fetch('/AIProvider/GetAll');
+        const providers = await resp.json();
+        
+        const select = $('#providerSelect');
+        select.empty();
+        select.append('<option value="">选择 AI 提供商...</option>');
+        
+        providers.forEach(p => {
+            select.append(`<option value="${p.id}">${p.name}</option>`);
+        });
+        
+        // 选择第一个
+        if (providers.length > 0) {
+            select.val(providers[0].id);
+            selectedProviderId = providers[0].id;
+        }
+    } catch (e) {
+        console.error('Load providers failed:', e);
+    }
+}
+
+$('#providerSelect').change(function() {
+    selectedProviderId = parseInt($(this).val()) || 0;
+});
+
+// 加载状态
+async function loadStatus() {
+    try {
+        const resp = await fetch('@Url.Action("GetStatus")');
+        const status = await resp.json();
+        
+        const badge = $('#statusBadge');
+        if (status.nodeInstalled && status.stagehandInstalled) {
+            badge.removeClass('status-warning status-error').addClass('status-ready');
+            badge.html('<i class="fas fa-check-circle"></i> <span>Stagehand 已就绪</span>');
+        } else if (!status.nodeInstalled) {
+            badge.removeClass('status-warning status-ready').addClass('status-error');
+            badge.html('<i class="fas fa-times-circle"></i> <span>Node.js 未安装</span>');
+        } else {
+            badge.removeClass('status-ready status-error').addClass('status-warning');
+            badge.html('<i class="fas fa-exclamation-circle"></i> <span>Stagehand 未安装</span>');
+        }
+    } catch (e) {
+        console.error('Load status failed:', e);
+        $('#statusBadge').removeClass('status-warning status-ready').addClass('status-error');
+        $('#statusBadge').html('<i class="fas fa-times-circle"></i> <span>状态检查失败</span>');
+    }
+}
+
+// 加载示例
+async function loadExamples() {
+    try {
+        const resp = await fetch('@Url.Action("GetExamples")');
+        const examples = await resp.json();
+        
+        const grid = $('#examplesGrid');
+        grid.empty();
+        
+        examples.forEach(ex => {
+            grid.append(`
+                <div class="example-card" onclick="useExample('${ex.prompt.replace(/'/g, "\\'")}')">
+                    <div class="example-icon">${ex.icon}</div>
+                    <div class="example-name">${ex.name}</div>
+                    <div class="example-desc">${ex.description}</div>
+                </div>
+            `);
+        });
+    } catch (e) {
+        console.error('Load examples failed:', e);
+    }
+}
+
+// 使用示例
+function useExample(prompt) {
+    $('#userInput').val(prompt);
+    sendMessage();
+}
+
+// 发送消息
+async function sendMessage() {
+    const input = $('#userInput');
+    const message = input.val().trim();
+    
+    if (!message) return;
+    
+    if (selectedProviderId === 0) {
+        toastr.error('请先选择 AI 提供商');
+        return;
+    }
+    
+    // 添加用户消息
+    addMessage('user', message);
+    input.val('');
+    
+    // 禁用输入
+    input.prop('disabled', true);
+    $('#sendBtn').prop('disabled', true).html('<span class="loading"></span> 生成中...');
+    
+    try {
+        const resp = await fetch('@Url.Action("GenerateScript")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userMessage: message,
+                providerId: selectedProviderId,
+                history: []
+            })
+        });
+        
+        const result = await resp.json();
+        
+        if (result.success) {
+            currentScript = result.script;
+            $('#scriptEditor').val(result.script);
+            $('#actionCount').text(result.actionCount);
+            $('#estimatedTime').text(formatTime(result.estimatedSeconds));
+            $('#complexity').text(result.complexity);
+            
+            addMessage('ai', `✅ 已生成 Stagehand 脚本！\n\n脚本包含 ${result.actionCount} 个操作步骤。你可以在右侧预览和编辑脚本，然后点击"运行脚本"执行。`);
+        } else {
+            addMessage('ai', `❌ ${result.message}`);
+        }
+    } catch (e) {
+        console.error('Generate failed:', e);
+        addMessage('ai', `❌ 生成失败：${e.message}`);
+    } finally {
+        input.prop('disabled', false);
+        $('#sendBtn').prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i> 生成脚本');
+    }
+}
+
+// 添加消息
+function addMessage(type, content) {
+    const messages = $('#chatMessages');
+    const messageClass = type === 'user' ? 'message-user' : (type === 'ai' ? 'message-ai' : 'message-system');
+    
+    messages.append(`
+        <div class="message ${messageClass}">
+            <div class="message-bubble">${content.replace(/\n/g, '<br>')}</div>
+        </div>
+    `);
+    
+    messages.scrollTop(messages[0].scrollHeight);
+}
+
+// 执行脚本
+async function executeScript() {
+    const script = $('#scriptEditor').val().trim();
+    
+    if (!script) {
+        toastr.error('请先生成脚本');
+        return;
+    }
+    
+    // 检查 Gemini 设置
+    const geminiSettings = getGeminiSettings();
+    if (!geminiSettings.apiKey) {
+        toastr.warning('建议先配置 Gemini API Key 以获得最佳效果');
+        if (!confirm('未配置 Gemini API Key，脚本可能无法正常执行。是否继续？')) {
+            return;
+        }
+    }
+    
+    if (!confirm('确定要执行此脚本吗？')) return;
+    
+    addMessage('system', '🚀 开始执行脚本...');
+    
+    try {
+        const resp = await fetch('@Url.Action("ExecuteScript")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                script: script,
+                debug: true,
+                geminiApiKey: geminiSettings.apiKey,
+                geminiModel: geminiSettings.model
+            })
+        });
+        
+        const result = await resp.json();
+        
+        if (result.success) {
+            addMessage('system', `✅ 脚本执行成功！\n\n输出：\n${result.output}`);
+            toastr.success('脚本执行成功！');
+        } else {
+            addMessage('system', `❌ 脚本执行失败\n\n错误：\n${result.error}`);
+            toastr.error('脚本执行失败');
+        }
+    } catch (e) {
+        console.error('Execute failed:', e);
+        addMessage('system', `❌ 执行失败：${e.message}`);
+        toastr.error('执行失败');
+    }
+}
+
+// 复制脚本
+function copyScript() {
+    const script = $('#scriptEditor').val();
+    if (!script) {
+        toastr.error('没有可复制的脚本');
+        return;
+    }
+    
+    navigator.clipboard.writeText(script).then(() => {
+        toastr.success('脚本已复制到剪贴板');
+    });
+}
+
+// 下载脚本
+function downloadScript() {
+    const script = $('#scriptEditor').val();
+    if (!script) {
+        toastr.error('没有可下载的脚本');
+        return;
+    }
+    
+    const blob = new Blob([script], { type: 'text/javascript' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `stagehand-task-${Date.now()}.js`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    toastr.success('脚本已下载');
+}
+
+// 清空对话
+function clearChat() {
+    if (!confirm('确定要清空对话历史吗？')) return;
+    
+    $('#chatMessages').empty();
+    addMessage('system', '👋 欢迎使用 Stagehand AI 任务助手\n\n我可以帮你创建基于 Stagehand 的网页自动化任务。用自然语言描述需求，我会生成可执行的 JavaScript 脚本。');
+    loadExamples();
+    
+    $('#scriptEditor').val('// 等待 AI 生成 Stagehand 脚本...\n// 你可以用自然语言描述任务需求');
+    $('#actionCount').text('0');
+    $('#estimatedTime').text('-');
+    $('#complexity').text('-');
+    currentScript = '';
+}
+
+// 格式化时间
+function formatTime(seconds) {
+    if (seconds < 60) return `${seconds} 秒`;
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes} 分 ${secs} 秒`;
+}
+
+// ========== Gemini 设置相关函数 ==========
+
+// 加载 Gemini 设置
+function loadGeminiSettings() {
+    const apiKey = localStorage.getItem('stagehand_gemini_api_key');
+    const model = localStorage.getItem('stagehand_gemini_model') || 'google/gemini-2.0-flash-exp';
+    
+    if (apiKey) {
+        $('#geminiApiKey').val(apiKey);
+    }
+    $('#geminiModel').val(model);
+}
+
+// 显示 Gemini 设置面板
+function showGeminiSettings() {
+    $('#geminiSettingsPanel').slideDown();
+}
+
+// 隐藏 Gemini 设置面板
+function hideGeminiSettings() {
+    $('#geminiSettingsPanel').slideUp();
+}
+
+// 切换 API Key 可见性
+function toggleApiKeyVisibility() {
+    const input = $('#geminiApiKey');
+    const icon = $('#toggleIcon');
+    
+    if (input.attr('type') === 'password') {
+        input.attr('type', 'text');
+        icon.removeClass('fa-eye').addClass('fa-eye-slash');
+    } else {
+        input.attr('type', 'password');
+        icon.removeClass('fa-eye-slash').addClass('fa-eye');
+    }
+}
+
+// 保存 Gemini 设置
+function saveGeminiSettings() {
+    const apiKey = $('#geminiApiKey').val().trim();
+    const model = $('#geminiModel').val();
+    
+    if (!apiKey) {
+        toastr.error('请输入 Gemini API Key');
+        return;
+    }
+    
+    localStorage.setItem('stagehand_gemini_api_key', apiKey);
+    localStorage.setItem('stagehand_gemini_model', model);
+    
+    toastr.success('Gemini 设置已保存');
+    hideGeminiSettings();
+}
+
+// 清除 Gemini 设置
+function clearGeminiSettings() {
+    if (!confirm('确定要清除 Gemini 设置吗？')) return;
+    
+    localStorage.removeItem('stagehand_gemini_api_key');
+    localStorage.removeItem('stagehand_gemini_model');
+    
+    $('#geminiApiKey').val('');
+    $('#geminiModel').val('google/gemini-2.0-flash-exp');
+    
+    toastr.success('Gemini 设置已清除');
+}
+
+// 测试 Gemini 连接
+async function testGeminiConnection() {
+    const apiKey = $('#geminiApiKey').val().trim();
+    const model = $('#geminiModel').val();
+    
+    if (!apiKey) {
+        toastr.error('请先输入 Gemini API Key');
+        return;
+    }
+    
+    const resultDiv = $('#geminiTestResult');
+    resultDiv.html('<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> 正在测试连接...</div>').show();
+    
+    try {
+        // 简单的测试请求
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model.replace('google/', '')}:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{ text: 'Hello' }]
+                }]
+            })
+        });
+        
+        if (response.ok) {
+            resultDiv.html('<div class="alert alert-success"><i class="fas fa-check-circle"></i> 连接成功！Gemini API Key 有效。</div>');
+        } else {
+            const error = await response.text();
+            resultDiv.html(`<div class="alert alert-danger"><i class="fas fa-times-circle"></i> 连接失败：${response.status} - ${error}</div>`);
+        }
+    } catch (error) {
+        resultDiv.html(`<div class="alert alert-danger"><i class="fas fa-times-circle"></i> 连接失败：${error.message}</div>`);
+    }
+}
+
+// 获取 Gemini 设置（用于脚本执行）
+function getGeminiSettings() {
+    return {
+        apiKey: localStorage.getItem('stagehand_gemini_api_key'),
+        model: localStorage.getItem('stagehand_gemini_model') || 'google/gemini-2.0-flash-exp'
+    };
+}
+</script>
+}

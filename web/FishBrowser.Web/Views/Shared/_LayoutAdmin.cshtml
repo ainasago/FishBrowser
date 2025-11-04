@@ -112,6 +112,12 @@
                     <!-- 任务管理 -->
                     <li class="nav-header">任务管理</li>
                     <li class="nav-item">
+                        <a asp-controller="StagehandTask" asp-action="Index" class="nav-link">
+                            <i class="nav-icon fas fa-magic"></i>
+                            <p>🎭 Stagehand AI 任务</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-tasks"></i>
                             <p>爬虫任务</p>
@@ -145,6 +151,12 @@
                         <a asp-controller="System" asp-action="Playwright" class="nav-link">
                             <i class="nav-icon fas fa-tools"></i>
                             <p>Playwright 管理</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-controller="Stagehand" asp-action="Index" class="nav-link">
+                            <i class="nav-icon fas fa-robot"></i>
+                            <p>Stagehand AI 框架</p>
                         </a>
                     </li>
                     <li class="nav-item">

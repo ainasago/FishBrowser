@@ -89,8 +89,12 @@ builder.Services.AddScoped<BrowserEnvironmentService>();
 builder.Services.AddScoped<BrowserSessionService>(); // ⭐ 会话管理服务（持久化目录管理）
 builder.Services.AddScoped<BrowserFingerprintService>(); // ⭐ 指纹信息服务（文本和 JSON 生成）
 builder.Services.AddScoped<PlaywrightMaintenanceService>();
+builder.Services.AddScoped<StagehandMaintenanceService>(); // Stagehand AI 自动化框架维护
+builder.Services.AddScoped<StagehandTaskService>(); // Stagehand 任务服务
+builder.Services.AddScoped<NodeExecutionService>(); // Node.js 执行服务
 builder.Services.AddScoped<AIProviderManagementService>();
 builder.Services.AddScoped<IAIProviderService, AIProviderService>();
+builder.Services.AddScoped<IAIClientService, AIClientService>(); // AI 客户端服务
 
 // 配置 CORS
 builder.Services.AddCors(options =>
