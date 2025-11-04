@@ -240,7 +240,7 @@ public class BrowserController : Controller
         }
     }
 
-    [HttpPut]
+    [HttpPut("UpdateBrowser")]
     public async Task<IActionResult> UpdateBrowser(int id, [FromBody] UpdateBrowserDto dto)
     {
         try
@@ -269,32 +269,48 @@ public class BrowserController : Controller
         }
     }
 
-    [HttpPost]
+    [HttpPost("CreateBrowser")]
     public async Task<IActionResult> CreateBrowser([FromBody] UpdateBrowserDto dto)
     {
         try
         {
+            _logger.LogInformation("=== CreateBrowser 开始 ===");
+            _logger.LogInformation("接收到的数据: Name={Name}, OS={OS}, Engine={Engine}", dto?.Name, dto?.OS, dto?.Engine);
+            
             var client = GetAuthenticatedClient();
+            _logger.LogInformation("已获取认证客户端");
+            
             var json = JsonSerializer.Serialize(dto);
+            _logger.LogInformation("序列化的 JSON (前200字符): {Json}", json.Length > 200 ? json.Substring(0, 200) + "..." : json);
+            
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            _logger.LogInformation("准备发送 POST 请求到 /api/browsers");
+            
             var response = await client.PostAsync("/api/browsers", content);
+            _logger.LogInformation("收到响应: StatusCode={StatusCode}", response.StatusCode);
             
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("创建成功，响应内容: {Content}", responseContent.Length > 200 ? responseContent.Substring(0, 200) + "..." : responseContent);
                 return Content(responseContent, "application/json");
             }
-
-            return StatusCode((int)response.StatusCode);
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogError("创建失败: StatusCode={StatusCode}, 错误内容={Error}", response.StatusCode, errorContent);
+                return StatusCode((int)response.StatusCode, new { success = false, error = errorContent });
+            }
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
+            _logger.LogWarning("未授权访问: {Message}", ex.Message);
             return Unauthorized();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating browser");
-            return StatusCode(500, new { error = ex.Message });
+            _logger.LogError(ex, "创建浏览器时发生异常: {Message}, StackTrace: {StackTrace}", ex.Message, ex.StackTrace);
+            return StatusCode(500, new { success = false, error = ex.Message });
         }
     }
 
@@ -472,6 +488,33 @@ public class BrowserController : Controller
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetBrowserFingerprint(int id, string format = "text")
+    {
+        try
+        {
+            var client = GetAuthenticatedClient();
+            var response = await client.GetAsync($"/api/browsers/{id}/fingerprint?format={format}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                return Content(content, "application/json");
+            }
+
+            return StatusCode((int)response.StatusCode);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting browser fingerprint");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 }
 
 public class UpdateBrowserDto
@@ -499,6 +542,17 @@ public class UpdateBrowserDto
     public string? WebGLVendor { get; set; }
     public string? WebGLRenderer { get; set; }
     public string? FontsJson { get; set; }
+    
+    // 防检测数据
+    public string? LanguagesJson { get; set; }
+    public string? PluginsJson { get; set; }
+    public string? SecChUa { get; set; }
+    public string? SecChUaPlatform { get; set; }
+    public string? SecChUaMobile { get; set; }
+    public string? WebdriverMode { get; set; }
+    public string? ConnectionType { get; set; }
+    public int? ConnectionRtt { get; set; }
+    public double? ConnectionDownlink { get; set; }
     
     // 代理配置
     public string? ProxyMode { get; set; }

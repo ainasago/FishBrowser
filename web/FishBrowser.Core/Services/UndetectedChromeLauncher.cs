@@ -52,10 +52,10 @@ namespace FishBrowser.WPF.Services
                 _log.LogInfo("UndetectedChrome", $"ChromeDriver path: {driverPath}");
 
                 // 配置 Chrome 选项
-                var options = BuildChromeOptions(profile, headless, proxy, environment);
-                
                 // 设置用户数据目录
                 userDataPath = PrepareUserDataPath(userDataPath);
+                
+                var options = BuildChromeOptions(profile, headless, proxy, environment, userDataPath);
 
                 // 创建驱动
                 _log.LogInfo("UndetectedChrome", "Creating driver instance...");
@@ -93,9 +93,17 @@ namespace FishBrowser.WPF.Services
             FingerprintProfile profile,
             bool headless,
             ProxyConfig? proxy,
-            BrowserEnvironment? environment)
+            BrowserEnvironment? environment,
+            string? userDataPath = null)
         {
             var options = new ChromeOptions();
+
+            // ⭐ 设置用户数据目录（持久化）
+            if (!string.IsNullOrEmpty(userDataPath))
+            {
+                options.AddArgument($"--user-data-dir={userDataPath}");
+                _log.LogInfo("UndetectedChrome", $"✅ User data directory set: {userDataPath}");
+            }
 
             // 基础参数（UndetectedChromeDriver 会自动处理大部分反检测）
             options.AddArgument("--disable-dev-shm-usage");
@@ -925,11 +933,27 @@ namespace FishBrowser.WPF.Services
 
             try
             {
+                // ⭐ 检查 driver 是否仍然有效
+                // 访问 Title 属性会触发与浏览器的通信
+                // 如果浏览器已关闭或连接丢失，会抛出异常
                 _ = _driver.Title;
                 return true;
             }
-            catch
+            catch (NullReferenceException)
             {
+                // WebDriver 内部对象为 null，说明浏览器已关闭
+                _driver = null;
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                // 浏览器连接已断开
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // 其他异常也表示浏览器不可用
+                _log.LogInfo("UndetectedChrome", $"IsRunning check failed: {ex.GetType().Name} - {ex.Message}");
                 return false;
             }
         }

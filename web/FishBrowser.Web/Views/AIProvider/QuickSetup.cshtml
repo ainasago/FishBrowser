@@ -1,0 +1,152 @@
+@{
+    ViewData["Title"] = "快速设置 AI 提供商";
+}
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">选择 AI 提供商</h3>
+            </div>
+            <div class="card-body">
+                <div class="row" id="providerCards">
+                    <div class="col-md-4 mb-3"><div class="card border-primary cursor-pointer provider-card" data-type="0"><div class="card-body text-center"><h5>OpenAI</h5><p class="text-muted small">GPT-4, GPT-3.5</p></div></div></div>
+                    <div class="col-md-4 mb-3"><div class="card border-info cursor-pointer provider-card" data-type="2"><div class="card-body text-center"><h5>Google Gemini</h5><p class="text-muted small">Gemini Pro</p></div></div></div>
+                    <div class="col-md-4 mb-3"><div class="card border-warning cursor-pointer provider-card" data-type="4"><div class="card-body text-center"><h5>通义千问</h5><p class="text-muted small">Qwen Max/Plus</p></div></div></div>
+                    <div class="col-md-4 mb-3"><div class="card border-success cursor-pointer provider-card" data-type="5"><div class="card-body text-center"><h5>魔塔社区</h5><p class="text-muted small">免费使用</p></div></div></div>
+                    <div class="col-md-4 mb-3"><div class="card border-secondary cursor-pointer provider-card" data-type="14"><div class="card-body text-center"><h5>Ollama</h5><p class="text-muted small">本地运行</p></div></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3" id="configPanel" style="display:none;">
+            <div class="card-header">
+                <h3 class="card-title">配置信息</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>配置名称</label>
+                    <input type="text" id="configName" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>模型 ID</label>
+                    <input type="text" id="modelId" class="form-control">
+                </div>
+                <div class="form-group" id="apiKeyGroup">
+                    <label>API Key</label>
+                    <input type="text" id="apiKey" class="form-control">
+                    <small class="form-text text-muted" id="apiKeyHelp"></small>
+                </div>
+                <button id="btn-create" class="btn btn-primary">创建并测试</button>
+                <a href="@Url.Action("Index")" class="btn btn-secondary">取消</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let selectedType = null;
+
+const providerDefaults = {
+    0: { name: 'OpenAI', model: 'gpt-3.5-turbo', url: 'https://api.openai.com/v1', help: '访问 https://platform.openai.com/api-keys 获取' },
+    2: { name: 'Google Gemini', model: 'gemini-pro', url: 'https://generativelanguage.googleapis.com/v1beta', help: '访问 https://ai.google.dev 获取' },
+    4: { name: '通义千问', model: 'qwen-plus', url: 'https://dashscope.aliyuncs.com/api/v1', help: '访问 https://dashscope.aliyun.com 获取' },
+    5: { name: '魔塔社区', model: 'Qwen/Qwen2.5-32B-Instruct', url: 'https://api-inference.modelscope.cn/v1', help: '访问 https://www.modelscope.cn 获取' },
+    14: { name: 'Ollama', model: 'llama3', url: 'http://localhost:11434', help: '本地运行，无需 API Key' }
+};
+
+$('.provider-card').on('click', function() {
+    $('.provider-card').removeClass('border-primary').addClass('border-secondary');
+    $(this).removeClass('border-secondary').addClass('border-primary');
+    
+    selectedType = parseInt($(this).data('type'));
+    const defaults = providerDefaults[selectedType];
+    
+    $('#configName').val(defaults.name);
+    $('#modelId').val(defaults.model);
+    $('#apiKeyHelp').text(defaults.help);
+    
+    if (selectedType === 14) {
+        $('#apiKeyGroup').hide();
+    } else {
+        $('#apiKeyGroup').show();
+    }
+    
+    $('#configPanel').slideDown();
+});
+
+$('#btn-create').on('click', async () => {
+    if (selectedType === null) {
+        toastr.error('请选择提供商');
+        return;
+    }
+    
+    const defaults = providerDefaults[selectedType];
+    const data = {
+        name: $('#configName').val(),
+        providerType: selectedType,
+        modelId: $('#modelId').val(),
+        baseUrl: defaults.url,
+        isEnabled: true,
+        priority: 1,
+        settings: {
+            temperature: 0.7,
+            maxTokens: 2000,
+            timeoutSeconds: 60,
+            maxRetries: 3
+        }
+    };
+    
+    try {
+        $('#btn-create').prop('disabled', true).text('创建中...');
+        
+        const resp = await fetch('@Url.Action("Create")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (!resp.ok) {
+            toastr.error('创建失败');
+            return;
+        }
+        
+        const provider = await resp.json();
+        
+        // 添加 API Key
+        if (selectedType !== 14 && $('#apiKey').val()) {
+            await fetch('@Url.Action("AddApiKey")?id=' + provider.id, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ keyName: '主密钥', apiKey: $('#apiKey').val() })
+            });
+        }
+        
+        // 测试连接
+        $('#btn-create').text('测试连接...');
+        const testResp = await fetch('@Url.Action("TestConnection")?id=' + provider.id, { method: 'POST' });
+        const testResult = await testResp.json();
+        
+        if (testResult.isHealthy) {
+            toastr.success('配置成功！正在跳转...');
+            setTimeout(() => {
+                location.href = '@Url.Action("Index")';
+            }, 1000);
+        } else {
+            toastr.warning('配置已保存，但连接测试失败。正在跳转...');
+            setTimeout(() => {
+                location.href = '@Url.Action("Index")';
+            }, 2000);
+        }
+    } catch (e) {
+        toastr.error('创建失败: ' + e);
+        $('#btn-create').prop('disabled', false).text('创建并测试');
+    }
+});
+</script>
+<style>
+.cursor-pointer { cursor: pointer; }
+.provider-card:hover { box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+</style>
+}

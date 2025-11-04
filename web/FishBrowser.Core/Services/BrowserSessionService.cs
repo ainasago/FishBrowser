@@ -17,15 +17,49 @@ public class BrowserSessionService
         _db = db;
         _log = log;
         
-        // 会话数据存储在应用根目录下的 BrowserSessions 文件夹
-        var baseDir = AppContext.BaseDirectory?.TrimEnd(Path.DirectorySeparatorChar) ?? Directory.GetCurrentDirectory();
-        _baseSessionPath = Path.Combine(baseDir, "BrowserSessions");
+        // ⭐ 会话数据统一存储在项目根目录的 debug/BrowserSessions 文件夹
+        // 获取项目根目录（向上查找包含 .csproj 或 .sln 的目录）
+        var currentDir = Directory.GetCurrentDirectory();
+        var projectRoot = FindProjectRoot(currentDir) ?? currentDir;
+        
+        _baseSessionPath = Path.Combine(projectRoot, "debug", "BrowserSessions");
         
         if (!Directory.Exists(_baseSessionPath))
         {
             Directory.CreateDirectory(_baseSessionPath);
             _log.LogInfo("BrowserSession", $"Created session storage: {_baseSessionPath}");
         }
+        else
+        {
+            _log.LogInfo("BrowserSession", $"Using session storage: {_baseSessionPath}");
+        }
+    }
+    
+    /// <summary>
+    /// 查找项目根目录（包含 .sln 或 web 文件夹的目录）
+    /// </summary>
+    private string? FindProjectRoot(string startPath)
+    {
+        var dir = new DirectoryInfo(startPath);
+        while (dir != null)
+        {
+            // 检查是否包含 .sln 文件
+            if (dir.GetFiles("*.sln").Length > 0)
+            {
+                return dir.FullName;
+            }
+            
+            // 检查是否是 web 目录（包含 FishBrowser.Api 和 FishBrowser.Web）
+            var hasApi = Directory.Exists(Path.Combine(dir.FullName, "FishBrowser.Api"));
+            var hasWeb = Directory.Exists(Path.Combine(dir.FullName, "FishBrowser.Web"));
+            if (hasApi && hasWeb)
+            {
+                return dir.FullName;
+            }
+            
+            dir = dir.Parent;
+        }
+        return null;
     }
 
     /// <summary>

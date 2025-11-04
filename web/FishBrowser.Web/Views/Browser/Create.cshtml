@@ -130,6 +130,9 @@
                                 <input type="checkbox" class="custom-control-input" id="persistence" checked>
                                 <label class="custom-control-label" for="persistence">启用会话持久化（保存 Cookie、历史记录等）</label>
                             </div>
+                            <small class="form-text text-muted mt-1" id="userDataPathInfo">
+                                <i class="fas fa-folder"></i> <strong>数据目录:</strong> <span id="userDataPathText" style="color: #666; word-break: break-all;"></span>
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -259,12 +262,28 @@
                                         <input type="text" class="form-control" id="secChUaPlatform">
                                     </div>
                                     <div class="form-group">
+                                        <label class="field-label">Sec-CH-UA-Mobile</label>
+                                        <input type="text" class="form-control" id="secChUaMobile" placeholder="?0">
+                                    </div>
+                                    <div class="form-group">
                                         <label class="field-label">Webdriver 模式</label>
                                         <select class="form-control" id="webdriverMode">
                                             <option value="undefined">undefined (推荐 - 完全移除)</option>
                                             <option value="true">true (与真实 Chrome 一致)</option>
                                             <option value="false">false (可能被检测)</option>
                                         </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="field-label">Connection Type</label>
+                                        <input type="text" class="form-control" id="connectionType" placeholder="4g">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="field-label">Connection RTT (ms)</label>
+                                        <input type="number" class="form-control" id="connectionRtt" placeholder="50">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="field-label">Connection Downlink (Mbps)</label>
+                                        <input type="number" step="0.1" class="form-control" id="connectionDownlink" placeholder="10">
                                     </div>
                                 </div>
                             </div>
@@ -412,7 +431,14 @@
                 } else {
                     // 新建模式：生成默认随机指纹
                     fullyRandomize();
+                    // 显示持久化提示
+                    updatePersistenceInfo();
                 }
+            });
+            
+            // 监听持久化复选框变化
+            $('#persistence').on('change', function() {
+                updatePersistenceInfo();
             });
             
             // 监听指纹字段变化
@@ -452,6 +478,17 @@
             if (!locks.lockFonts) randomizeFonts();
             updateFingerprint();
             showSuccess('指纹已重新生成');
+        }
+
+        // 更新持久化信息显示
+        function updatePersistenceInfo() {
+            const isPersistenceEnabled = $('#persistence').is(':checked');
+            if (isPersistenceEnabled) {
+                // 新建模式：显示提示
+                $('#userDataPathText').text('首次启动时将在 debug/BrowserSessions 目录下创建');
+            } else {
+                $('#userDataPathText').text('未启用持久化（使用临时目录）');
+            }
         }
 
         // 加载分组
@@ -505,6 +542,17 @@
                         $('#browserLocale').val(data.locale || 'zh-CN');
                         $('#persistence').prop('checked', data.enablePersistence !== false);
                         
+                        // ⭐ 显示用户数据目录
+                        if (data.userDataPath) {
+                            $('#userDataPathText').text(data.userDataPath);
+                        } else if (data.enablePersistence !== false) {
+                            // 如果启用了持久化但还没有路径，显示预期路径
+                            const safeName = data.name.replace(/[<>:"/\\|?*]/g, '_');
+                            $('#userDataPathText').text(`debug/BrowserSessions/env_${data.id}_${safeName} (首次启动时创建)`);
+                        } else {
+                            $('#userDataPathText').text('未启用持久化（使用临时目录）');
+                        }
+                        
                         // 指纹特征
                         $('#userAgent').val(data.userAgent || '');
                         $('#platform').val(data.platform || 'Win32');
@@ -525,6 +573,19 @@
                             }
                         }
                         
+                        // ⭐ 高级设置 - 防检测数据
+                        $('#languagesJson').val(data.languagesJson || '');
+                        $('#pluginsJson').val(data.pluginsJson || '');
+                        $('#secChUa').val(data.secChUa || '');
+                        $('#secChUaPlatform').val(data.secChUaPlatform || '');
+                        $('#secChUaMobile').val(data.secChUaMobile || '');
+                        $('#webdriverMode').val(data.webdriverMode || 'undefined');
+                        
+                        // ⭐ 高级设置 - 连接信息
+                        $('#connectionType').val(data.connectionType || '');
+                        $('#connectionRtt').val(data.connectionRtt || '');
+                        $('#connectionDownlink').val(data.connectionDownlink || '');
+                        
                         // 代理配置
                         $('#proxyMode').val(data.proxyMode || 'none');
                         $('#proxyUrl').val(data.proxyApiUrl || '');
@@ -543,6 +604,10 @@
 
         // 保存浏览器
         function saveBrowser() {
+            console.log('=== saveBrowser 开始 ===');
+            console.log('isEditMode:', isEditMode);
+            console.log('browserId:', browserId);
+            
             // 解析分辨率
             const resolution = $('#browserResolution').val().split('x');
             const viewportWidth = parseInt(resolution[0]) || 1920;
@@ -556,7 +621,7 @@
             const data = {
                 name: $('#browserName').val(),
                 notes: $('#browserNotes').val(),
-                groupId: parseInt($('#browserGroup').val()) || null,
+                groupId: $('#browserGroup').val() || null,
                 // 浏览器配置
                 engine: $('#browserEngine').val(),
                 os: $('#browserOS').val(),
@@ -575,18 +640,29 @@
                 webGLVendor: $('#webglVendor').val(),
                 webGLRenderer: $('#webglRenderer').val(),
                 fontsJson: fontsJson,
+                // 防检测数据
                 languagesJson: $('#languagesJson').val(),
                 pluginsJson: $('#pluginsJson').val(),
                 secChUa: $('#secChUa').val(),
                 secChUaPlatform: $('#secChUaPlatform').val(),
+                secChUaMobile: $('#secChUaMobile').val(),
+                webdriverMode: $('#webdriverMode').val() || 'undefined',
+                connectionType: $('#connectionType').val(),
+                connectionRtt: parseInt($('#connectionRtt').val()) || null,
+                connectionDownlink: parseFloat($('#connectionDownlink').val()) || null,
                 // 代理配置
                 proxyMode: $('#proxyMode').val(),
                 proxyApiUrl: $('#proxyUrl').val()
             };
 
+            console.log('准备发送的数据:', data);
+
             const url = isEditMode ? '@Url.Action("UpdateBrowser")' + '?id=' + browserId : '@Url.Action("CreateBrowser")';
             const method = isEditMode ? 'PUT' : 'POST';
             const successMsg = isEditMode ? '保存成功' : '浏览器创建成功';
+
+            console.log('请求 URL:', url);
+            console.log('请求方法:', method);
 
             $.ajax({
                 url: url,
@@ -594,6 +670,7 @@
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 success: function(response) {
+                    console.log('收到成功响应:', response);
                     if (response.success) {
                         showSuccess(successMsg);
                         // 通知父窗口保存成功
@@ -609,10 +686,17 @@
                             }, 1000);
                         }
                     } else {
+                        console.error('响应中 success=false:', response.error);
                         showError(response.error || (isEditMode ? '保存失败' : '创建失败'));
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.error('=== AJAX 错误 ===');
+                    console.error('状态码:', xhr.status);
+                    console.error('状态文本:', xhr.statusText);
+                    console.error('响应文本:', xhr.responseText);
+                    console.error('错误:', error);
+                    console.error('状态:', status);
                     showError(isEditMode ? '保存失败，请稍后重试' : '创建失败，请稍后重试');
                 }
             });

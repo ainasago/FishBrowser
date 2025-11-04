@@ -102,6 +102,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<GpuCatalogService>();
         services.AddSingleton<AntiDetectionService>();  // 防检测数据生成与校验
         services.AddSingleton<FingerprintCollectorService>();  // 通用指纹收集服务
+        services.AddScoped<PlaywrightMaintenanceService>();
+        services.AddScoped<AIProviderManagementService>();
         
         // 浏览器分组和指纹校验服务 (M1)
         services.AddScoped<BrowserGroupService>();

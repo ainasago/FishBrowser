@@ -66,6 +66,9 @@ public abstract class BaseAdapter : IAIProviderAdapter
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
             });
 
+            // 调试日志：记录发送的 JSON
+            _logger.LogInfo("AIAdapter", $"Sending request to {url.Split('?')[0]}: {json.Substring(0, Math.Min(500, json.Length))}...");
+
             var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")

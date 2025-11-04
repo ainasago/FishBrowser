@@ -1,0 +1,342 @@
+@{
+    ViewData["Title"] = "编辑 AI 提供商";
+    var providerId = ViewBag.ProviderId;
+}
+
+<div class="row">
+    <div class="col-12 col-lg-10">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title"><i class="fas fa-cog mr-2"></i>基本信息</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>配置名称 <span class="text-danger">*</span></label>
+                            <input type="text" id="name" class="form-control" placeholder="例如：OpenAI GPT-4">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>提供商类型</label>
+                            <select id="providerType" class="form-control" disabled>
+                                <option value="0">OpenAI</option>
+                                <option value="1">Azure OpenAI</option>
+                                <option value="2">Google Gemini</option>
+                                <option value="3">Anthropic Claude</option>
+                                <option value="4">阿里云通义千问</option>
+                                <option value="5">魔塔社区 ModelScope</option>
+                                <option value="6">硅基流动 SiliconFlow</option>
+                                <option value="7">百度文心一言</option>
+                                <option value="9">智谱 GLM</option>
+                                <option value="11">Moonshot AI</option>
+                                <option value="14">Ollama（本地）</option>
+                            </select>
+                            <small class="form-text text-muted">创建后无法修改</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label>模型 ID <span class="text-danger">*</span></label>
+                            <input type="text" id="modelId" class="form-control" placeholder="例如：gpt-3.5-turbo">
+                            <small class="form-text text-muted">模型的标识符，用于 API 调用</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>优先级</label>
+                            <input type="number" id="priority" class="form-control" value="1" min="0">
+                            <small class="form-text text-muted">数字越小优先级越高</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Base URL <span class="text-danger">*</span></label>
+                    <input type="text" id="baseUrl" class="form-control" placeholder="https://api.openai.com/v1">
+                    <small class="form-text text-muted">API 服务的基础地址</small>
+                </div>
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="isEnabled">
+                    <label class="custom-control-label" for="isEnabled">启用此配置</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h3 class="card-title"><i class="fas fa-sliders-h mr-2"></i>模型设置</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Temperature</label>
+                            <input type="number" id="temperature" class="form-control" step="0.1" min="0" max="2" value="0.7">
+                            <small class="form-text text-muted">0-2，控制随机性</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Max Tokens</label>
+                            <input type="number" id="maxTokens" class="form-control" value="2000">
+                            <small class="form-text text-muted">最大生成长度</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>超时时间（秒）</label>
+                            <input type="number" id="timeoutSeconds" class="form-control" value="60">
+                            <small class="form-text text-muted">请求超时时间</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>最大重试次数</label>
+                            <input type="number" id="maxRetries" class="form-control" value="3">
+                            <small class="form-text text-muted">失败后重试</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>RPM 限制（每分钟请求数）</label>
+                            <input type="number" id="rpmLimit" class="form-control" placeholder="留空表示无限制">
+                            <small class="form-text text-muted">限制请求频率，防止超出配额</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h3 class="card-title"><i class="fas fa-key mr-2"></i>API 密钥管理</h3>
+                <div class="card-tools">
+                    <button id="btn-add-key" class="btn btn-sm btn-light"><i class="fas fa-plus mr-1"></i>添加密钥</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="apiKeysList"></div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button id="btn-save" class="btn btn-primary">保存</button>
+            <button id="btn-test" class="btn btn-success">测试连接</button>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">返回</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let provider = null;
+const providerId = @providerId;
+
+async function loadProvider() {
+    try {
+        const resp = await fetch('@Url.Action("GetById")?id=' + providerId);
+        provider = await resp.json();
+        
+        $('#name').val(provider.name);
+        $('#providerType').val(provider.providerType);
+        $('#modelId').val(provider.modelId);
+        $('#baseUrl').val(provider.baseUrl);
+        $('#priority').val(provider.priority || 1);
+        $('#isEnabled').prop('checked', provider.isEnabled);
+        
+        // 加载设置
+        if (provider.settings) {
+            $('#temperature').val(provider.settings.temperature || 0.7);
+            $('#maxTokens').val(provider.settings.maxTokens || 2000);
+            $('#timeoutSeconds').val(provider.settings.timeoutSeconds || 60);
+            $('#maxRetries').val(provider.settings.maxRetries || 3);
+            $('#rpmLimit').val(provider.settings.rpmLimit || '');
+        }
+        
+        renderApiKeys();
+    } catch (e) {
+        toastr.error('加载失败: ' + e);
+    }
+}
+
+function renderApiKeys() {
+    if (!provider.apiKeys || provider.apiKeys.length === 0) {
+        $('#apiKeysList').html('<div class="alert alert-info"><i class="fas fa-info-circle mr-2"></i>暂无 API 密钥，点击「添加密钥」按钮开始配置</div>');
+        return;
+    }
+    
+    let html = '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>名称</th><th>密钥</th><th>使用次数</th><th>今日使用</th><th>每日限额</th><th>状态</th><th>操作</th></tr></thead><tbody>';
+    provider.apiKeys.forEach(k => {
+        const statusBadge = k.isActive ? '<span class="badge badge-success">启用</span>' : '<span class="badge badge-secondary">禁用</span>';
+        const dailyLimit = k.dailyLimit ? k.dailyLimit : '<span class="text-muted">无限制</span>';
+        const usagePercent = k.dailyLimit ? Math.round((k.todayUsage / k.dailyLimit) * 100) : 0;
+        const usageColor = usagePercent > 80 ? 'danger' : (usagePercent > 50 ? 'warning' : 'success');
+        
+        html += `
+            <tr>
+                <td><strong>${k.keyName}</strong></td>
+                <td><code class="text-muted">${k.maskedKey}</code></td>
+                <td>${k.usageCount}</td>
+                <td>
+                    ${k.todayUsage}
+                    ${k.dailyLimit ? `<div class="progress" style="height:4px;"><div class="progress-bar bg-${usageColor}" style="width:${usagePercent}%"></div></div>` : ''}
+                </td>
+                <td>${dailyLimit}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <button onclick="editApiKey(${k.id}, '${k.keyName}', ${k.dailyLimit || 'null'})" class="btn btn-sm btn-outline-primary" title="编辑"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteApiKey(${k.id})" class="btn btn-sm btn-outline-danger" title="删除"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    });
+    html += '</tbody></table></div>';
+    $('#apiKeysList').html(html);
+}
+
+$('#btn-add-key').on('click', () => {
+    showAddApiKeyDialog();
+});
+
+function showAddApiKeyDialog() {
+    const html = `
+        <div class="modal fade" id="addApiKeyModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="fas fa-key mr-2"></i>添加 API 密钥</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>密钥名称 <span class="text-danger">*</span></label>
+                            <input type="text" id="newKeyName" class="form-control" placeholder="例如：主密钥">
+                        </div>
+                        <div class="form-group">
+                            <label>API Key <span class="text-danger">*</span></label>
+                            <input type="text" id="newApiKey" class="form-control" placeholder="sk-...">
+                            <small class="form-text text-muted">密钥将被加密存储</small>
+                        </div>
+                        <div class="form-group">
+                            <label>每日限额（可选）</label>
+                            <input type="number" id="newDailyLimit" class="form-control" placeholder="留空表示无限制">
+                            <small class="form-text text-muted">限制此密钥每天的使用次数</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" onclick="addApiKey()">添加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    $('body').append(html);
+    $('#addApiKeyModal').modal('show');
+    $('#addApiKeyModal').on('hidden.bs.modal', function() { $(this).remove(); });
+}
+
+async function addApiKey() {
+    const keyName = $('#newKeyName').val().trim();
+    const apiKey = $('#newApiKey').val().trim();
+    const dailyLimit = $('#newDailyLimit').val() ? parseInt($('#newDailyLimit').val()) : null;
+    
+    if (!keyName || !apiKey) {
+        toastr.error('请填写密钥名称和 API Key');
+        return;
+    }
+    
+    try {
+        const resp = await fetch('@Url.Action("AddApiKey")?id=' + providerId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keyName, apiKey, dailyLimit })
+        });
+        if (resp.ok) {
+            toastr.success('添加成功');
+            $('#addApiKeyModal').modal('hide');
+            loadProvider();
+        } else {
+            toastr.error('添加失败');
+        }
+    } catch (e) {
+        toastr.error('添加失败: ' + e);
+    }
+}
+
+function editApiKey(keyId, keyName, dailyLimit) {
+    const newLimit = prompt(`修改「${keyName}」的每日限额（当前：${dailyLimit || '无限制'}）\n\n输入新的限额（留空表示无限制）:`, dailyLimit || '');
+    if (newLimit === null) return;
+    // TODO: 实现编辑 API Key 的后端接口
+    toastr.info('编辑功能开发中...');
+}
+
+async function deleteApiKey(keyId) {
+    if (!confirm('确定删除此密钥吗？')) return;
+    try {
+        const resp = await fetch('@Url.Action("DeleteApiKey")?keyId=' + keyId, { method: 'DELETE' });
+        if (resp.ok) {
+            toastr.success('删除成功');
+            loadProvider();
+        }
+    } catch (e) {
+        toastr.error('删除失败: ' + e);
+    }
+}
+
+$('#btn-save').on('click', async () => {
+    try {
+        const data = {
+            name: $('#name').val(),
+            modelId: $('#modelId').val(),
+            baseUrl: $('#baseUrl').val(),
+            isEnabled: $('#isEnabled').is(':checked'),
+            priority: parseInt($('#priority').val()) || 1,
+            settings: {
+                temperature: parseFloat($('#temperature').val()) || 0.7,
+                maxTokens: parseInt($('#maxTokens').val()) || 2000,
+                timeoutSeconds: parseInt($('#timeoutSeconds').val()) || 60,
+                maxRetries: parseInt($('#maxRetries').val()) || 3,
+                rpmLimit: $('#rpmLimit').val() ? parseInt($('#rpmLimit').val()) : null
+            }
+        };
+        
+        const resp = await fetch('@Url.Action("Update")?id=' + providerId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (resp.ok) {
+            toastr.success('保存成功');
+            setTimeout(() => location.href = '@Url.Action("Index")', 1000);
+        } else {
+            toastr.error('保存失败');
+        }
+    } catch (e) {
+        toastr.error('保存失败: ' + e);
+    }
+});
+
+$('#btn-test').on('click', async () => {
+    try {
+        const resp = await fetch('@Url.Action("TestConnection")?id=' + providerId, { method: 'POST' });
+        const result = await resp.json();
+        if (result.isHealthy) {
+            toastr.success(`连接成功 (${result.responseTimeMs}ms)`);
+        } else {
+            toastr.error('连接失败: ' + result.message);
+        }
+    } catch (e) {
+        toastr.error('测试失败: ' + e);
+    }
+});
+
+$(document).ready(loadProvider);
+</script>
+}

@@ -1,0 +1,124 @@
+@{
+    ViewData["Title"] = "AI 提供商管理";
+}
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group">
+            <a href="@Url.Action("QuickSetup")" class="btn btn-primary"><i class="fas fa-magic mr-1"></i>快速设置</a>
+            <button id="btn-refresh" class="btn btn-secondary"><i class="fas fa-sync-alt mr-1"></i>刷新</button>
+        </div>
+    </div>
+</div>
+
+<div id="emptyState" class="card" style="display:none;">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-robot fa-4x text-muted mb-3"></i>
+        <h5>还没有配置 AI 提供商</h5>
+        <p class="text-muted">点击「快速设置」开始配置你的第一个 AI 提供商</p>
+        <a href="@Url.Action("QuickSetup")" class="btn btn-primary mt-2"><i class="fas fa-magic mr-1"></i>快速设置</a>
+    </div>
+</div>
+
+<div id="providersList" class="row"></div>
+
+@section Scripts {
+<script>
+const providerTypeColors = {
+    0: '#10A37F', 1: '#10A37F', 2: '#4285F4', 3: '#D97757', 4: '#FF6A00',
+    5: '#624AFF', 6: '#00D4AA', 7: '#2932E1', 8: '#006EFF', 9: '#1E88E5',
+    10: '#FF6A00', 11: '#7C3AED', 12: '#FF6A00', 13: '#FF6A00', 14: '#6B7280',
+    15: '#6B7280', 16: '#6B7280'
+};
+
+const providerTypeNames = {
+    0: 'OpenAI', 1: 'Azure OpenAI', 2: 'Google Gemini', 3: 'Claude', 4: '通义千问',
+    5: '魔塔社区', 6: '硅基流动', 7: '文心一言', 8: '腾讯混元', 9: '智谱 GLM',
+    10: '讯飞星火', 11: 'Moonshot', 12: 'MiniMax', 13: '零一万物', 14: 'Ollama',
+    15: 'LM Studio', 16: 'LocalAI'
+};
+
+async function loadProviders() {
+    try {
+        const resp = await fetch('@Url.Action("GetAll")');
+        const providers = await resp.json();
+        
+        if (!providers || providers.length === 0) {
+            $('#emptyState').show();
+            $('#providersList').hide();
+            return;
+        }
+
+        $('#emptyState').hide();
+        $('#providersList').show().html('');
+
+        providers.forEach(p => {
+            const color = providerTypeColors[p.providerType] || '#0078D4';
+            const typeName = providerTypeNames[p.providerType] || 'Unknown';
+            const statusColor = p.isEnabled ? '#4CAF50' : '#999';
+            
+            const card = `
+                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">${p.name}</h5>
+                                <span class="badge" style="background-color:${color}">${typeName}</span>
+                            </div>
+                            <p class="text-muted small mb-2">${p.modelId}</p>
+                            <div class="mb-2">
+                                <span class="badge badge-${p.isEnabled ? 'success' : 'secondary'}">${p.isEnabled ? '启用' : '禁用'}</span>
+                                <span class="badge badge-info">${p.apiKeyCount} 个密钥</span>
+                                <span class="badge badge-light">今日 ${p.todayUsage} 次</span>
+                            </div>
+                            <div class="btn-group btn-group-sm w-100">
+                                <a href="@Url.Action("Edit")?id=${p.id}" class="btn btn-outline-primary">编辑</a>
+                                <button onclick="testProvider(${p.id})" class="btn btn-outline-success">测试</button>
+                                <button onclick="deleteProvider(${p.id})" class="btn btn-outline-danger">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#providersList').append(card);
+        });
+    } catch (e) {
+        toastr.error('加载失败: ' + e);
+    }
+}
+
+async function testProvider(id) {
+    try {
+        const resp = await fetch('@Url.Action("TestConnection")?id=' + id, { method: 'POST' });
+        const result = await resp.json();
+        if (result.isHealthy) {
+            toastr.success(`连接成功 (${result.responseTimeMs}ms)`);
+        } else {
+            toastr.error('连接失败: ' + result.message);
+        }
+    } catch (e) {
+        toastr.error('测试失败: ' + e);
+    }
+}
+
+async function deleteProvider(id) {
+    if (!confirm('确定要删除这个 AI 提供商吗？\n\n删除后将无法恢复。')) return;
+    try {
+        const resp = await fetch('@Url.Action("Delete")?id=' + id, { method: 'DELETE' });
+        if (resp.ok) {
+            toastr.success('删除成功');
+            // 延迟刷新，确保后端删除完成
+            setTimeout(() => loadProviders(), 300);
+        } else {
+            const error = await resp.text();
+            toastr.error('删除失败: ' + error);
+        }
+    } catch (e) {
+        toastr.error('删除失败: ' + e);
+    }
+}
+
+$('#btn-refresh').on('click', loadProviders);
+$(document).ready(loadProviders);
+</script>
+}

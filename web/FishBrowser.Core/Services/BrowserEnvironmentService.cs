@@ -930,4 +930,268 @@ public class BrowserEnvironmentService
         _db.SaveChanges();
         _log.LogInfo("BrowserEnv", $"Switched profile for {env.Name} from {oldProfileId?.ToString() ?? "null"} to {profile.Id}");
     }
+
+    /// <summary>
+    /// 保存浏览器环境（与 WPF BrowserEnvironmentEditorDialog.Save_Click 逻辑完全一致）
+    /// </summary>
+    public BrowserEnvironment SaveBrowserEnvironment(SaveBrowserEnvironmentRequest request)
+    {
+        // 验证必填字段
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new ArgumentException("请输入浏览器名称");
+        }
+
+        // 创建或更新环境
+        BrowserEnvironment env;
+        if (request.Id.HasValue && request.Id.Value > 0)
+        {
+            // 编辑模式
+            env = _db.BrowserEnvironments.FirstOrDefault(e => e.Id == request.Id.Value);
+            if (env == null)
+            {
+                throw new InvalidOperationException($"浏览器环境不存在: {request.Id}");
+            }
+        }
+        else
+        {
+            // 新建模式
+            env = new BrowserEnvironment();
+        }
+
+        // 基本信息
+        env.Name = request.Name;
+        env.Notes = request.Notes;
+        env.Engine = request.Engine ?? "UndetectedChrome";
+        env.OS = request.OS ?? "Windows";
+        env.Locale = request.Locale ?? "zh-CN";
+        env.EnablePersistence = request.EnablePersistence ?? true; // ⭐ 默认启用持久化（与 WPF 一致）
+        env.GroupId = request.GroupId;
+
+        // 分辨率
+        env.ViewportWidth = request.ViewportWidth ?? 1920;
+        env.ViewportHeight = request.ViewportHeight ?? 1080;
+
+        // 指纹特征（直接存储在 BrowserEnvironment 中）
+        env.UserAgent = request.UserAgent;
+        env.Platform = request.Platform;
+        env.Timezone = request.Timezone;
+        
+        _log.LogInfo("BrowserEnvironmentService", $"[SAVE] Environment: Platform={env.Platform}, UserAgent={env.UserAgent?.Substring(0, Math.Min(50, env.UserAgent?.Length ?? 0))}...");
+        
+        env.HardwareConcurrency = request.HardwareConcurrency;
+        env.DeviceMemory = request.DeviceMemory;
+        env.MaxTouchPoints = request.MaxTouchPoints;
+        env.WebGLVendor = request.WebGLVendor;
+        env.WebGLRenderer = request.WebGLRenderer;
+        env.FontsJson = request.FontsJson;
+        env.LanguagesJson = request.LanguagesJson;
+        env.PluginsJson = request.PluginsJson;
+        env.SecChUa = request.SecChUa;
+        env.SecChUaPlatform = request.SecChUaPlatform;
+        env.SecChUaMobile = request.SecChUaMobile;
+        env.WebdriverMode = request.WebdriverMode ?? "undefined";
+        
+        // 保存连接信息
+        env.ConnectionType = request.ConnectionType;
+        env.ConnectionRtt = request.ConnectionRtt;
+        env.ConnectionDownlink = request.ConnectionDownlink;
+
+        // 代理配置
+        env.ProxyMode = request.ProxyMode ?? "none";
+        env.ProxyApiUrl = request.ProxyApiUrl;
+
+        // 自动创建或更新对应的 FingerprintProfile（用于启动浏览器）
+        FingerprintProfile profile;
+        if (env.FingerprintProfileId.HasValue)
+        {
+            // 更新现有 Profile
+            profile = _db.FingerprintProfiles.FirstOrDefault(p => p.Id == env.FingerprintProfileId.Value);
+            if (profile != null)
+            {
+                UpdateProfileFromEnvironment(profile, env);
+                _db.FingerprintProfiles.Update(profile);
+            }
+            else
+            {
+                // Profile 不存在，创建新的
+                profile = CreateProfileFromEnvironment(env);
+                _db.FingerprintProfiles.Add(profile);
+                _db.SaveChanges(); // 先保存 Profile 获取 ID
+                env.FingerprintProfileId = profile.Id;
+            }
+        }
+        else
+        {
+            // 创建新 Profile
+            profile = CreateProfileFromEnvironment(env);
+            _db.FingerprintProfiles.Add(profile);
+            _db.SaveChanges(); // 先保存 Profile 获取 ID
+            env.FingerprintProfileId = profile.Id;
+        }
+        
+        // 强制验证：确保 Profile 的 Platform 与 Environment 一致
+        if (profile.Platform != env.Platform)
+        {
+            _log.LogWarn("BrowserEnvironmentService", $"[PLATFORM MISMATCH] Profile.Platform={profile.Platform}, Env.Platform={env.Platform}, forcing update...");
+            profile.Platform = env.Platform;
+            profile.UserAgent = env.UserAgent;
+            profile.MaxTouchPoints = env.MaxTouchPoints ?? 0;
+            _db.FingerprintProfiles.Update(profile);
+            _db.SaveChanges();
+            _log.LogInfo("BrowserEnvironmentService", $"[PLATFORM FIXED] Profile.Platform updated to {profile.Platform}");
+        }
+
+        // 保存 Environment 到数据库
+        if (request.Id.HasValue && request.Id.Value > 0)
+        {
+            _db.BrowserEnvironments.Update(env);
+        }
+        else
+        {
+            env.CreatedAt = DateTime.UtcNow;
+            _db.BrowserEnvironments.Add(env);
+        }
+
+        _db.SaveChanges();
+
+        _log.LogInfo("BrowserEnvironmentService", $"Saved browser environment: {env.Name} (ID={env.Id})");
+        return env;
+    }
+
+    private FingerprintProfile CreateProfileFromEnvironment(BrowserEnvironment env)
+    {
+        _log.LogInfo("BrowserEnvironmentService", $"[CREATE PROFILE] From Environment: Platform={env.Platform}, UserAgent={env.UserAgent?.Substring(0, Math.Min(50, env.UserAgent?.Length ?? 0))}...");
+        
+        // 根据 Platform 设置正确的 Vendor
+        var platform = env.Platform ?? "Win32";
+        var vendor = platform switch
+        {
+            "iPhone" or "iPad" or "MacIntel" => "Apple Computer, Inc.",
+            "Linux armv8l" => "Google Inc.",  // Android
+            _ => "Google Inc."  // Windows/Linux
+        };
+        
+        // 根据 Platform 设置合理的硬件配置
+        var defaultHardwareConcurrency = platform switch
+        {
+            "iPhone" or "iPad" => 4,
+            "MacIntel" => 8,
+            "Linux armv8l" => 8,
+            _ => 8
+        };
+        
+        var defaultDeviceMemory = platform switch
+        {
+            "iPhone" or "iPad" => 4,
+            "MacIntel" => 8,
+            "Linux armv8l" => 6,
+            _ => 8
+        };
+        
+        var profile = new FingerprintProfile
+        {
+            Name = $"Auto_{env.Name}",
+            UserAgent = env.UserAgent ?? "",
+            Platform = platform,
+            Vendor = vendor,
+            Timezone = env.Timezone ?? "Asia/Shanghai",
+            Locale = env.Locale ?? "zh-CN",
+            ViewportWidth = env.ViewportWidth,
+            ViewportHeight = env.ViewportHeight,
+            HardwareConcurrency = env.HardwareConcurrency ?? defaultHardwareConcurrency,
+            DeviceMemory = env.DeviceMemory ?? defaultDeviceMemory,
+            MaxTouchPoints = env.MaxTouchPoints ?? 0,
+            WebGLVendor = env.WebGLVendor,
+            WebGLRenderer = env.WebGLRenderer,
+            FontsJson = env.FontsJson,
+            LanguagesJson = env.LanguagesJson,
+            PluginsJson = env.PluginsJson,
+            SecChUa = env.SecChUa,
+            SecChUaPlatform = env.SecChUaPlatform,
+            SecChUaMobile = env.SecChUaMobile,
+            ConnectionType = env.ConnectionType,
+            ConnectionRtt = env.ConnectionRtt ?? 0,
+            ConnectionDownlink = env.ConnectionDownlink ?? 0,
+            CreatedAt = DateTime.UtcNow
+        };
+        
+        _log.LogInfo("BrowserEnvironmentService", $"[CREATED PROFILE] Platform={profile.Platform}, Vendor={profile.Vendor}, UserAgent={profile.UserAgent?.Substring(0, Math.Min(50, profile.UserAgent?.Length ?? 0))}...");
+        return profile;
+    }
+
+    private void UpdateProfileFromEnvironment(FingerprintProfile profile, BrowserEnvironment env)
+    {
+        _log.LogInfo("BrowserEnvironmentService", $"[UPDATE PROFILE BEFORE] Platform={profile.Platform}, UserAgent={profile.UserAgent?.Substring(0, Math.Min(50, profile.UserAgent?.Length ?? 0))}...");
+        
+        // 根据 Platform 设置正确的 Vendor
+        var platform = env.Platform ?? "Win32";
+        var vendor = platform switch
+        {
+            "iPhone" or "iPad" or "MacIntel" => "Apple Computer, Inc.",
+            "Linux armv8l" => "Google Inc.",
+            _ => "Google Inc."
+        };
+        
+        profile.Name = $"Auto_{env.Name}";
+        profile.UserAgent = env.UserAgent ?? "";
+        profile.Platform = platform;
+        profile.Vendor = vendor;
+        profile.Timezone = env.Timezone ?? "Asia/Shanghai";
+        
+        _log.LogInfo("BrowserEnvironmentService", $"[UPDATE PROFILE AFTER] Platform={profile.Platform}, UserAgent={profile.UserAgent?.Substring(0, Math.Min(50, profile.UserAgent?.Length ?? 0))}...");
+        
+        profile.Locale = env.Locale ?? "zh-CN";
+        profile.ViewportWidth = env.ViewportWidth;
+        profile.ViewportHeight = env.ViewportHeight;
+        profile.HardwareConcurrency = env.HardwareConcurrency ?? 8;
+        profile.DeviceMemory = env.DeviceMemory ?? 8;
+        profile.MaxTouchPoints = env.MaxTouchPoints ?? 0;
+        profile.WebGLVendor = env.WebGLVendor;
+        profile.WebGLRenderer = env.WebGLRenderer;
+        profile.FontsJson = env.FontsJson;
+        profile.LanguagesJson = env.LanguagesJson;
+        profile.PluginsJson = env.PluginsJson;
+        profile.SecChUa = env.SecChUa;
+        profile.SecChUaPlatform = env.SecChUaPlatform;
+        profile.SecChUaMobile = env.SecChUaMobile;
+        profile.ConnectionType = env.ConnectionType;
+        profile.ConnectionRtt = env.ConnectionRtt ?? 0;
+        profile.ConnectionDownlink = env.ConnectionDownlink ?? 0;
+        profile.UpdatedAt = DateTime.UtcNow;
+    }
+}
+
+public class SaveBrowserEnvironmentRequest
+{
+    public int? Id { get; set; }
+    public string Name { get; set; } = "";
+    public string? Notes { get; set; }
+    public int? GroupId { get; set; }
+    public string? Engine { get; set; }
+    public string? OS { get; set; }
+    public int? ViewportWidth { get; set; }
+    public int? ViewportHeight { get; set; }
+    public string? Locale { get; set; }
+    public string? Timezone { get; set; }
+    public bool? EnablePersistence { get; set; }
+    public string? UserAgent { get; set; }
+    public string? Platform { get; set; }
+    public int? HardwareConcurrency { get; set; }
+    public int? DeviceMemory { get; set; }
+    public int? MaxTouchPoints { get; set; }
+    public string? WebGLVendor { get; set; }
+    public string? WebGLRenderer { get; set; }
+    public string? FontsJson { get; set; }
+    public string? LanguagesJson { get; set; }
+    public string? PluginsJson { get; set; }
+    public string? SecChUa { get; set; }
+    public string? SecChUaPlatform { get; set; }
+    public string? SecChUaMobile { get; set; }
+    public string? WebdriverMode { get; set; }
+    public string? ConnectionType { get; set; }
+    public int? ConnectionRtt { get; set; }
+    public double? ConnectionDownlink { get; set; }
+    public string? ProxyMode { get; set; }
+    public string? ProxyApiUrl { get; set; }
 }

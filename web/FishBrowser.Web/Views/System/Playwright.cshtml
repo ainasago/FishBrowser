@@ -1,0 +1,146 @@
+@{
+    ViewData["Title"] = "Playwright 管理";
+}
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Playwright 管理</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title">安装状态</h3>
+                        <div class="card-tools">
+                            <button id="btn-refresh" class="btn btn-light btn-sm">刷新状态</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-3">安装状态</dt>
+                            <dd class="col-sm-9" id="installStatus">检查中...</dd>
+
+                            <dt class="col-sm-3">版本信息</dt>
+                            <dd class="col-sm-9" id="versionInfo">检查中...</dd>
+
+                            <dt class="col-sm-3">安装路径</dt>
+                            <dd class="col-sm-9" id="installPath">检查中...</dd>
+
+                            <dt class="col-sm-3">浏览器列表</dt>
+                            <dd class="col-sm-9" id="browserList">检查中...</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h3 class="card-title">安装操作</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-md-4 mb-2">
+                                <button id="btn-install" class="btn btn-primary btn-block"><i class="fas fa-download mr-1"></i>安装</button>
+                            </div>
+                            <div class="col-12 col-md-4 mb-2">
+                                <button id="btn-update" class="btn btn-warning btn-block"><i class="fas fa-sync-alt mr-1"></i>更新</button>
+                            </div>
+                            <div class="col-12 col-md-4 mb-2">
+                                <button id="btn-uninstall" class="btn btn-danger btn-block"><i class="fas fa-trash-alt mr-1"></i>卸载</button>
+                            </div>
+                        </div>
+                        <div id="progressBox" class="mt-3" style="display:none;">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border text-info mr-2" role="status" style="width:1.5rem;height:1.5rem"></div>
+                                <span id="progressText">处理中...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="card-title">验证提示</h3>
+                    </div>
+                    <div class="card-body">
+                        安装完成后，建议重新启动应用并进行一次浏览器运行验证。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+    function setLoading(loading, text) {
+        const btns = ['#btn-install', '#btn-update', '#btn-uninstall', '#btn-refresh'];
+        btns.forEach(id => $(id).prop('disabled', loading));
+        if (loading) {
+            $('#progressText').text(text || '处理中...');
+            $('#progressBox').show();
+        } else {
+            $('#progressBox').hide();
+        }
+    }
+
+    async function fetchStatus() {
+        try {
+            const resp = await fetch('@Url.Action("GetPlaywrightStatus", "System")');
+            const text = await resp.text();
+            let data;
+            try { data = JSON.parse(text); } catch { data = text; }
+            if (resp.ok && typeof data === 'object') {
+                const s = typeof data === 'string' ? JSON.parse(data) : data;
+                const isInstalled = s.IsInstalled || (s.isInstalled === true);
+                $('#installStatus').text(isInstalled ? '✅ 已安装' : '❌ 未安装');
+                $('#installStatus').toggleClass('text-success', isInstalled).toggleClass('text-danger', !isInstalled);
+                $('#versionInfo').text(s.VersionDisplay || s.versionDisplay || '无法获取版本信息');
+                $('#installPath').text(s.InstallPath || s.installPath || '未找到');
+                const list = s.BrowserList || s.browserList || [];
+                $('#browserList').text(Array.isArray(list) ? list.join(', ') : '无');
+            } else {
+                toastr.error('获取状态失败');
+            }
+        } catch (e) {
+            toastr.error('获取状态异常: ' + e);
+        }
+    }
+
+    async function postAction(actionUrl, label) {
+        try {
+            setLoading(true, label + '中...');
+            const resp = await fetch(actionUrl, { method: 'POST' });
+            if (resp.ok) {
+                toastr.success(label + '成功');
+                await fetchStatus();
+            } else {
+                const err = await resp.text();
+                toastr.error(label + '失败: ' + err);
+            }
+        } catch (e) {
+            toastr.error(label + '异常: ' + e);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    $('#btn-refresh').on('click', () => fetchStatus());
+    $('#btn-install').on('click', () => postAction('@Url.Action("InstallPlaywright", "System")', '安装'));
+    $('#btn-update').on('click', () => postAction('@Url.Action("UpdatePlaywright", "System")', '更新'));
+    $('#btn-uninstall').on('click', async () => {
+        if (!confirm('确定要卸载 Playwright 浏览器吗？')) return;
+        await postAction('@Url.Action("UninstallPlaywright", "System")', '卸载');
+    });
+
+    $(document).ready(() => {
+        fetchStatus();
+    });
+</script>
+}

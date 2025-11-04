@@ -195,6 +195,62 @@
     </div>
 </div>
 
+<!-- 指纹信息查看模态框 -->
+<div class="modal fade" id="fingerprintModal" tabindex="-1" role="dialog" aria-labelledby="fingerprintModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="fingerprintModalLabel">🔍 浏览器指纹信息</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <button type="button" class="btn btn-sm btn-success" onclick="selectAllFingerprint()">
+                        <i class="fas fa-check-square"></i> 全选
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary ml-2" onclick="copyFingerprint()">
+                        <i class="fas fa-copy"></i> 复制
+                    </button>
+                    <button type="button" class="btn btn-sm btn-info ml-2" onclick="downloadFingerprint()">
+                        <i class="fas fa-download"></i> 下载
+                    </button>
+                </div>
+                
+                <!-- Tab 切换 -->
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="text-tab" data-toggle="tab" href="#textFormat" role="tab">
+                            📄 文本格式
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="json-tab" data-toggle="tab" href="#jsonFormat" role="tab">
+                            📋 JSON 格式
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Tab 内容 -->
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="textFormat" role="tabpanel">
+                        <textarea id="fingerprintText" class="form-control" style="font-family: 'Courier New', monospace; font-size: 12px; height: 500px; white-space: pre;" readonly></textarea>
+                    </div>
+                    <div class="tab-pane fade" id="jsonFormat" role="tabpanel">
+                        <textarea id="fingerprintJson" class="form-control" style="font-family: 'Courier New', monospace; font-size: 12px; height: 500px; white-space: pre;" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> 关闭
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         let currentPage = 1;
@@ -280,7 +336,12 @@
                 method: 'GET',
                 success: function(resp) {
                     if (resp && resp.success && resp.data) {
-                        runningMap = resp.data;
+                        // API 返回的是数组 [{id, name, processId, engine}, ...]
+                        // 转换为 Map: {browserId: processId}
+                        runningMap = {};
+                        resp.data.forEach(browser => {
+                            runningMap[browser.id] = browser.processId;
+                        });
                         const ids = Object.keys(runningMap).map(id => parseInt(id));
                         runningIds = new Set(ids);
                         $('#runningCount').text(ids.length);
@@ -378,6 +439,9 @@
                             </button>
                             <button class="btn btn-sm btn-info" onclick="openEditModal(${browser.id})" title="编辑">
                                 <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="viewFingerprint(${browser.id})" title="查看指纹">
+                                <i class="fas fa-fingerprint"></i>
                             </button>
                             <button class="btn btn-sm btn-danger" onclick="deleteBrowser(${browser.id})" title="删除">
                                 <i class="fas fa-trash"></i>
@@ -606,6 +670,125 @@
             $('#browserModalLabel').text('编辑浏览器');
             $('#browserIframe').attr('src', '@Url.Action("Create")?id=' + id + '&modal=1');
             $('#browserModal').modal('show');
+        }
+
+        // 查看浏览器指纹
+        let currentFingerprintData = null;
+        let currentBrowserId = null;
+        function viewFingerprint(id) {
+            currentBrowserId = id;
+            
+            // 加载文本格式
+            $.ajax({
+                url: '@Url.Action("GetBrowserFingerprint")' + '?id=' + id + '&format=text',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        currentFingerprintData = response.data;
+                        $('#fingerprintText').val(response.data.text);
+                        $('#fingerprintModalLabel').text(`🔍 浏览器指纹信息 - ${response.data.browser.name}`);
+                        $('#fingerprintModal').modal('show');
+                    } else {
+                        showError(response.error || '获取指纹信息失败');
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '@Url.Action("Login", "Auth")';
+                    } else {
+                        showError('获取指纹信息失败');
+                    }
+                }
+            });
+        }
+        
+        // 监听 JSON Tab 切换，懒加载 JSON 数据
+        $('#json-tab').on('shown.bs.tab', function() {
+            if (currentBrowserId && !$('#fingerprintJson').val()) {
+                // 加载 JSON 格式
+                $.ajax({
+                    url: '@Url.Action("GetBrowserFingerprint")' + '?id=' + currentBrowserId + '&format=json',
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            // 格式化 JSON 显示
+                            const jsonObj = JSON.parse(response.data.json);
+                            $('#fingerprintJson').val(JSON.stringify(jsonObj, null, 2));
+                        } else {
+                            $('#fingerprintJson').val('获取 JSON 失败: ' + response.error);
+                        }
+                    },
+                    error: function() {
+                        $('#fingerprintJson').val('获取 JSON 失败');
+                    }
+                });
+            }
+        });
+        
+        // 清空 JSON 内容，避免缓存
+        $('#fingerprintModal').on('hidden.bs.modal', function() {
+            $('#fingerprintJson').val('');
+            currentBrowserId = null;
+        });
+
+        // 全选指纹文本
+        function selectAllFingerprint() {
+            // 根据当前激活的 Tab 选择对应的 textarea
+            const activeTab = $('#fingerprintModal .tab-pane.active');
+            const textarea = activeTab.find('textarea')[0];
+            if (textarea) {
+                textarea.select();
+            }
+        }
+
+        // 复制指纹文本
+        function copyFingerprint() {
+            // 根据当前激活的 Tab 选择对应的 textarea
+            const activeTab = $('#fingerprintModal .tab-pane.active');
+            const textarea = activeTab.find('textarea')[0];
+            if (textarea) {
+                textarea.select();
+                document.execCommand('copy');
+                showSuccess('已复制到剪贴板');
+            }
+        }
+
+        // 下载指纹文本
+        function downloadFingerprint() {
+            if (!currentFingerprintData) return;
+            
+            // 根据当前激活的 Tab 选择对应的内容和文件扩展名
+            const activeTabId = $('#fingerprintModal .nav-link.active').attr('href');
+            let content, extension;
+            
+            if (activeTabId === '#jsonFormat') {
+                content = $('#fingerprintJson').val();
+                extension = 'json';
+            } else {
+                content = $('#fingerprintText').val();
+                extension = 'txt';
+            }
+            
+            if (!content) {
+                showError('没有可导出的内容');
+                return;
+            }
+            
+            const browserName = currentFingerprintData.browser.name;
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const filename = `fingerprint-${browserName}-${timestamp}.${extension}`;
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showSuccess('已导出到: ' + filename);
         }
 
         // 监听 iframe 内的保存成功事件

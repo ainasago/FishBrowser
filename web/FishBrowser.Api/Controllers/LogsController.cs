@@ -16,10 +16,13 @@ public class LogsController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetLogs([FromQuery] int limit = 500)
+    public IActionResult GetLogs([FromQuery] int limit = 500, [FromQuery] int lines = 100)
     {
         try
         {
+            // 使用 lines 参数，如果没有指定则使用 limit
+            var maxLines = lines > 0 ? lines : limit;
+            
             // 从配置读取日志路径
             var logPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
             var logs = new List<object>();
@@ -45,9 +48,9 @@ public class LogsController : ControllerBase
                                 allLines.Add(line);
                             }
 
-                            var lines = allLines.TakeLast(limit);
+                            var logLines = allLines.TakeLast(maxLines);
 
-                            foreach (var logLine in lines)
+                            foreach (var logLine in logLines)
                             {
                                 if (string.IsNullOrWhiteSpace(logLine)) continue;
 
@@ -97,7 +100,8 @@ public class LogsController : ControllerBase
                                 {
                                     timestamp,
                                     level,
-                                    message
+                                    message,
+                                    source = "API"
                                 });
                             }
                         }
@@ -123,7 +127,7 @@ public class LogsController : ControllerBase
             return Ok(new
             {
                 success = true,
-                logs = logs.OrderBy(l => ((dynamic)l).timestamp).ToList()
+                data = logs.OrderBy(l => ((dynamic)l).timestamp).ToList()
             });
         }
         catch (Exception ex)

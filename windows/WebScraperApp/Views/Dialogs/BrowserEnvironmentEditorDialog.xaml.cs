@@ -879,6 +879,19 @@ namespace FishBrowser.WPF.Views.Dialogs
                 env.MaxTouchPoints = int.TryParse(MaxTouchPointsTextBox.Text, out var mtp) ? mtp : null;
                 env.WebGLVendor = WebGLVendorTextBox.Text;
                 env.WebGLRenderer = WebGLRendererTextBox.Text;
+                
+                // ⭐ 保存字体列表
+                if (_selectedFonts != null && _selectedFonts.Count > 0)
+                {
+                    env.FontsJson = System.Text.Json.JsonSerializer.Serialize(_selectedFonts);
+                }
+                else if (!string.IsNullOrWhiteSpace(FontsListTextBox.Text))
+                {
+                    // 从文本框解析字体列表
+                    var fontsList = FontsListTextBox.Text.Split(',').Select(f => f.Trim()).Where(f => !string.IsNullOrEmpty(f)).ToList();
+                    env.FontsJson = System.Text.Json.JsonSerializer.Serialize(fontsList);
+                }
+                
                 env.LanguagesJson = LanguagesJsonTextBox.Text;
                 env.PluginsJson = PluginsJsonTextBox.Text;
                 env.SecChUa = SecChUaTextBox.Text;
@@ -1002,6 +1015,7 @@ namespace FishBrowser.WPF.Views.Dialogs
                 MaxTouchPoints = env.MaxTouchPoints ?? 0,
                 WebGLVendor = env.WebGLVendor,
                 WebGLRenderer = env.WebGLRenderer,
+                FontsJson = env.FontsJson,
                 LanguagesJson = env.LanguagesJson,
                 PluginsJson = env.PluginsJson,
                 SecChUa = env.SecChUa,
@@ -1048,6 +1062,7 @@ namespace FishBrowser.WPF.Views.Dialogs
             profile.MaxTouchPoints = env.MaxTouchPoints ?? 0;
             profile.WebGLVendor = env.WebGLVendor;
             profile.WebGLRenderer = env.WebGLRenderer;
+            profile.FontsJson = env.FontsJson;
             profile.LanguagesJson = env.LanguagesJson;
             profile.PluginsJson = env.PluginsJson;
             profile.SecChUa = env.SecChUa;

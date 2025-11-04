@@ -1,5 +1,6 @@
 using System.Text;
 using FishBrowser.Api.Configuration;
+using FishBrowser.Api.Middleware;
 using FishBrowser.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -78,6 +79,18 @@ builder.Services.AddSingleton<FishBrowser.Api.Services.BrowserLaunchService>();
 
 // 注册随机浏览器生成服务（从 Core 项目）
 builder.Services.AddScoped<BrowserRandomGenerator>();
+
+// 注册浏览器环境服务（用于保存浏览器，与 WPF 逻辑一致）
+builder.Services.AddScoped<UserAgentCompositionService>();
+builder.Services.AddScoped<DependencyResolutionService>();
+builder.Services.AddScoped<FingerprintGeneratorService>();
+builder.Services.AddScoped<FingerprintCollectorService>(); // ⭐ 指纹收集服务（生成完整 JSON）
+builder.Services.AddScoped<BrowserEnvironmentService>();
+builder.Services.AddScoped<BrowserSessionService>(); // ⭐ 会话管理服务（持久化目录管理）
+builder.Services.AddScoped<BrowserFingerprintService>(); // ⭐ 指纹信息服务（文本和 JSON 生成）
+builder.Services.AddScoped<PlaywrightMaintenanceService>();
+builder.Services.AddScoped<AIProviderManagementService>();
+builder.Services.AddScoped<IAIProviderService, AIProviderService>();
 
 // 配置 CORS
 builder.Services.AddCors(options =>
@@ -231,6 +244,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+// ⭐ 全局异常处理中间件（必须在最前面）
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
