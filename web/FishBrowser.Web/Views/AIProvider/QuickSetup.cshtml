@@ -1,44 +1,158 @@
 @{
-    ViewData["Title"] = "快速设置 AI 提供商";
+    ViewData["Title"] = "快速配置 AI 提供商";
 }
 
-<div class="row">
-    <div class="col-12 col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">选择 AI 提供商</h3>
+<style>
+.wizard-container { max-width: 900px; margin: 0 auto; }
+.step-header { background: white; border-bottom: 1px solid #e0e0e0; padding: 24px; margin-bottom: 24px; }
+.step-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+.step-desc { color: #666; font-size: 13px; }
+.provider-card { background: white; border: 2px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 8px; cursor: pointer; transition: all 0.3s; width: 220px; height: 140px; display: inline-block; text-align: center; }
+.provider-card:hover { border-color: #0078d4; box-shadow: 0 0 10px rgba(0,120,212,0.3); }
+.provider-card.selected { border-color: #0078d4; border-width: 3px; box-shadow: 0 0 12px rgba(0,120,212,0.4); }
+.provider-icon { font-size: 32px; margin-bottom: 8px; }
+.provider-name { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+.provider-sub { font-size: 11px; color: #666; margin-bottom: 4px; }
+.provider-desc { font-size: 10px; color: #999; }
+.model-card { background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
+.model-card:hover { border-color: #0078d4; }
+.model-card.selected { border-color: #0078d4; background: #f0f8ff; }
+.info-box { border-radius: 6px; padding: 16px; margin-bottom: 20px; }
+.info-box.warning { background: #fff9e6; border: 1px solid #ffe5b3; }
+.info-box.success { background: #e8f5e9; border: 1px solid #4caf50; }
+.section-title { font-size: 14px; font-weight: 600; margin: 24px 0 12px 0; }
+</style>
+
+<div class="wizard-container">
+    <!-- 步骤指示器 -->
+    <div class="step-header">
+        <div class="step-title" id="stepTitle">步骤 1/3：选择 AI 提供商</div>
+        <div class="step-desc" id="stepDesc">选择你想使用的 AI 服务提供商</div>
+    </div>
+
+    <!-- 步骤 1: 选择提供商 -->
+    <div id="step1" class="step-content">
+        <div class="section-title"> 国际提供商</div>
+        <div>
+            <div class="provider-card" data-type="1" data-name="OpenAI">
+                <div class="provider-icon">🤖</div>
+                <div class="provider-name">OpenAI</div>
+                <div class="provider-sub">GPT-4 / GPT-3.5</div>
+                <div class="provider-desc">最强大，适合复杂任务</div>
             </div>
-            <div class="card-body">
-                <div class="row" id="providerCards">
-                    <div class="col-md-4 mb-3"><div class="card border-primary cursor-pointer provider-card" data-type="0"><div class="card-body text-center"><h5>OpenAI</h5><p class="text-muted small">GPT-4, GPT-3.5</p></div></div></div>
-                    <div class="col-md-4 mb-3"><div class="card border-info cursor-pointer provider-card" data-type="2"><div class="card-body text-center"><h5>Google Gemini</h5><p class="text-muted small">Gemini Pro</p></div></div></div>
-                    <div class="col-md-4 mb-3"><div class="card border-warning cursor-pointer provider-card" data-type="4"><div class="card-body text-center"><h5>通义千问</h5><p class="text-muted small">Qwen Max/Plus</p></div></div></div>
-                    <div class="col-md-4 mb-3"><div class="card border-success cursor-pointer provider-card" data-type="5"><div class="card-body text-center"><h5>魔塔社区</h5><p class="text-muted small">免费使用</p></div></div></div>
-                    <div class="col-md-4 mb-3"><div class="card border-secondary cursor-pointer provider-card" data-type="14"><div class="card-body text-center"><h5>Ollama</h5><p class="text-muted small">本地运行</p></div></div></div>
+            <div class="provider-card" data-type="3" data-name="GoogleGemini">
+                <div class="provider-icon">🌟</div>
+                <div class="provider-name">Google Gemini</div>
+                <div class="provider-sub">Gemini Pro</div>
+                <div class="provider-desc">免费额度大</div>
+            </div>
+            <div class="provider-card" data-type="4" data-name="AnthropicClaude">
+                <div class="provider-icon">🧠</div>
+                <div class="provider-name">Claude</div>
+                <div class="provider-sub">Claude 3</div>
+                <div class="provider-desc">长上下文，安全性高</div>
+            </div>
+        </div>
+
+        <div class="section-title"> 国内提供商</div>
+        <div>
+            <div class="provider-card" data-type="101" data-name="AlibabaQwen">
+                <div class="provider-icon">☁️</div>
+                <div class="provider-name">通义千问</div>
+                <div class="provider-sub">阿里云</div>
+                <div class="provider-desc">中文优秀，性价比高</div>
+            </div>
+            <div class="provider-card" data-type="109" data-name="ModelScope">
+                <div class="provider-icon">🪄</div>
+                <div class="provider-name">魔塔社区</div>
+                <div class="provider-sub">ModelScope</div>
+                <div class="provider-desc">开源模型，免费使用</div>
+            </div>
+            <div class="provider-card" data-type="110" data-name="SiliconFlow">
+                <div class="provider-icon">⚡</div>
+                <div class="provider-name">硅基流动</div>
+                <div class="provider-sub">SiliconFlow</div>
+                <div class="provider-desc">高性能推理，按量计费</div>
+            </div>
+            <div class="provider-card" data-type="104" data-name="ZhipuGLM">
+                <div class="provider-icon">🎓</div>
+                <div class="provider-name">智谱 GLM</div>
+                <div class="provider-sub">GLM-4</div>
+                <div class="provider-desc">清华背景，中文强</div>
+            </div>
+            <div class="provider-card" data-type="106" data-name="MoonshotAI">
+                <div class="provider-icon">🌙</div>
+                <div class="provider-name">Moonshot</div>
+                <div class="provider-sub">Kimi</div>
+                <div class="provider-desc">超长上下文 128K</div>
+            </div>
+        </div>
+
+        <div class="section-title"> 本地部署</div>
+        <div>
+            <div class="provider-card" data-type="201" data-name="Ollama">
+                <div class="provider-icon">🦙</div>
+                <div class="provider-name">Ollama</div>
+                <div class="provider-sub">本地模型</div>
+                <div class="provider-desc">完全免费，数据安全</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 步骤 2: 选择模型 -->
+    <div id="step2" class="step-content" style="display:none;">
+        <div style="color: #666; margin-bottom: 16px;">已选择：<span id="selectedProviderName"></span></div>
+        <div class="section-title">选择模型</div>
+        <div id="modelsList"></div>
+    </div>
+
+    <!-- 步骤 3: 配置 API Key -->
+    <div id="step3" class="step-content" style="display:none;">
+        <div style="color: #666; margin-bottom: 16px;">配置：<span id="step3ProviderInfo"></span></div>
+
+        <div class="info-box warning">
+            <div style="font-weight: 600; margin-bottom: 8px;"> 如何获取 API Key？</div>
+            <div id="apiKeyHelp" style="font-size: 12px; color: #666;"></div>
+        </div>
+
+        <div class="form-group">
+            <label style="font-weight: 600; margin-bottom: 8px;">Base URL</label>
+            <input type="text" class="form-control" id="baseUrlInput" placeholder="API 基础地址">
+            <small class="form-text text-muted">可以修改为自定义的 API 地址或代理地址</small>
+        </div>
+
+        <div class="form-group">
+            <label style="font-weight: 600; margin-bottom: 8px;">API 密钥</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="apiKeyInput" placeholder="输入你的 API Key">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="button" id="btnPaste">粘贴</button>
                 </div>
             </div>
         </div>
 
-        <div class="card mt-3" id="configPanel" style="display:none;">
-            <div class="card-header">
-                <h3 class="card-title">配置信息</h3>
+        <div class="form-group">
+            <label style="font-weight: 600; margin-bottom: 8px;">配置名称（可选）</label>
+            <input type="text" class="form-control" id="configNameInput" placeholder="例如：我的 Gemini">
+        </div>
+
+        <div class="info-box success">
+            <div style="font-weight: 600; margin-bottom: 8px;"> 配置完成后</div>
+            <div style="font-size: 12px; color: #666;">
+                • 系统会自动测试连接<br>
+                • 可在「AI 任务」中使用<br>
+                • 可随时添加更多密钥
             </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label>配置名称</label>
-                    <input type="text" id="configName" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>模型 ID</label>
-                    <input type="text" id="modelId" class="form-control">
-                </div>
-                <div class="form-group" id="apiKeyGroup">
-                    <label>API Key</label>
-                    <input type="text" id="apiKey" class="form-control">
-                    <small class="form-text text-muted" id="apiKeyHelp"></small>
-                </div>
-                <button id="btn-create" class="btn btn-primary">创建并测试</button>
-                <a href="@Url.Action("Index")" class="btn btn-secondary">取消</a>
+        </div>
+    </div>
+
+    <!-- 底部按钮 -->
+    <div style="background: white; border-top: 1px solid #e0e0e0; padding: 16px; margin-top: 24px;">
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-outline-secondary" id="btnBack" style="display:none;"> 上一步</button>
+            <div class="ml-auto">
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary mr-2">取消</a>
+                <button class="btn btn-primary" id="btnNext" disabled>下一步 →</button>
             </div>
         </div>
     </div>
@@ -46,60 +160,188 @@
 
 @section Scripts {
 <script>
+let currentStep = 1;
 let selectedType = null;
+let selectedModel = null;
+let selectedProviderName = '';
 
-const providerDefaults = {
-    0: { name: 'OpenAI', model: 'gpt-3.5-turbo', url: 'https://api.openai.com/v1', help: '访问 https://platform.openai.com/api-keys 获取' },
-    2: { name: 'Google Gemini', model: 'gemini-pro', url: 'https://generativelanguage.googleapis.com/v1beta', help: '访问 https://ai.google.dev 获取' },
-    4: { name: '通义千问', model: 'qwen-plus', url: 'https://dashscope.aliyuncs.com/api/v1', help: '访问 https://dashscope.aliyun.com 获取' },
-    5: { name: '魔塔社区', model: 'Qwen/Qwen2.5-32B-Instruct', url: 'https://api-inference.modelscope.cn/v1', help: '访问 https://www.modelscope.cn 获取' },
-    14: { name: 'Ollama', model: 'llama3', url: 'http://localhost:11434', help: '本地运行，无需 API Key' }
+// 模型配置
+const modelOptions = {
+    1: [ // OpenAI
+        { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', desc: '最强大，适合复杂任务', price: '$0.01/1K tokens', context: '128K 上下文', recommended: false },
+        { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', desc: '性价比高，适合日常使用（推荐）', price: '$0.0005/1K tokens', context: '16K 上下文', recommended: true }
+    ],
+    3: [ // Google Gemini
+        { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', desc: '最新模型，速度快（推荐）', price: '免费额度', context: '32K 上下文', recommended: true },
+        { id: 'gemini-pro', name: 'Gemini Pro', desc: '稳定版本', price: '免费额度', context: '32K 上下文', recommended: false }
+    ],
+    4: [ // Claude
+        { id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet', desc: '平衡性能与成本（推荐）', price: '$0.003/1K tokens', context: '200K 上下文', recommended: true },
+        { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', desc: '最强大，适合复杂任务', price: '$0.015/1K tokens', context: '200K 上下文', recommended: false }
+    ],
+    101: [ // 通义千问
+        { id: 'qwen-plus', name: '通义千问-Plus', desc: '性价比高，中文优秀（推荐）', price: '¥0.004/1K tokens', context: '8K 上下文', recommended: true },
+        { id: 'qwen-max', name: '通义千问-Max', desc: '最强大，适合复杂任务', price: '¥0.04/1K tokens', context: '8K 上下文', recommended: false }
+    ],
+    109: [ // ModelScope
+        { id: 'Qwen/Qwen2.5-32B-Instruct', name: 'Qwen2.5-32B', desc: '平衡性能，中文优秀（推荐）', price: '免费使用', context: '32K 上下文', recommended: true },
+        { id: 'Qwen/Qwen2.5-72B-Instruct', name: 'Qwen2.5-72B', desc: '最强性能', price: '免费使用', context: '32K 上下文', recommended: false }
+    ],
+    110: [ // SiliconFlow
+        { id: 'Qwen/QwQ-32B', name: 'QwQ-32B', desc: '推理专用模型（推荐）', price: '¥0.42/M tokens', context: '32K 上下文', recommended: true },
+        { id: 'deepseek-ai/DeepSeek-V3', name: 'DeepSeek-V3', desc: '最强性能', price: '¥0.14/M tokens', context: '64K 上下文', recommended: false }
+    ],
+    104: [ // 智谱GLM
+        { id: 'glm-4', name: 'GLM-4', desc: '最新模型，中文优秀（推荐）', price: '¥0.05/1K tokens', context: '128K 上下文', recommended: true }
+    ],
+    106: [ // Moonshot
+        { id: 'moonshot-v1-8k', name: 'Moonshot 8K', desc: '性价比高（推荐）', price: '¥0.012/1K tokens', context: '8K 上下文', recommended: true },
+        { id: 'moonshot-v1-128k', name: 'Moonshot 128K', desc: '超长上下文', price: '¥0.06/1K tokens', context: '128K 上下文', recommended: false }
+    ],
+    201: [ // Ollama
+        { id: 'llama3', name: 'Llama 3', desc: 'Meta 开源模型（推荐）', price: '完全免费', context: '8K 上下文', recommended: true },
+        { id: 'qwen2.5', name: 'Qwen 2.5', desc: '中文优秀', price: '完全免费', context: '32K 上下文', recommended: false }
+    ]
 };
 
+const providerConfig = {
+    1: { url: 'https://api.openai.com/v1', help: '访问 https://platform.openai.com/api-keys 获取 API Key' },
+    3: { url: 'https://generativelanguage.googleapis.com/v1beta', help: '访问 https://ai.google.dev 获取 API Key' },
+    4: { url: 'https://api.anthropic.com/v1', help: '访问 https://console.anthropic.com 获取 API Key' },
+    101: { url: 'https://dashscope.aliyuncs.com/api/v1', help: '访问 https://dashscope.aliyun.com 获取 API Key' },
+    109: { url: 'https://api-inference.modelscope.cn/v1', help: '访问 https://www.modelscope.cn 获取 API Key' },
+    110: { url: 'https://api.siliconflow.cn/v1', help: '访问 https://siliconflow.cn 获取 API Key' },
+    104: { url: 'https://open.bigmodel.cn/api/paas/v4', help: '访问 https://open.bigmodel.cn 获取 API Key' },
+    106: { url: 'https://api.moonshot.cn/v1', help: '访问 https://platform.moonshot.cn 获取 API Key' },
+    201: { url: 'http://localhost:11434', help: '本地运行，无需 API Key' }
+};
+
+// 步骤 1: 选择提供商
 $('.provider-card').on('click', function() {
-    $('.provider-card').removeClass('border-primary').addClass('border-secondary');
-    $(this).removeClass('border-secondary').addClass('border-primary');
-    
+    $('.provider-card').removeClass('selected');
+    $(this).addClass('selected');
     selectedType = parseInt($(this).data('type'));
-    const defaults = providerDefaults[selectedType];
-    
-    $('#configName').val(defaults.name);
-    $('#modelId').val(defaults.model);
-    $('#apiKeyHelp').text(defaults.help);
-    
-    if (selectedType === 14) {
-        $('#apiKeyGroup').hide();
-    } else {
-        $('#apiKeyGroup').show();
-    }
-    
-    $('#configPanel').slideDown();
+    selectedProviderName = $(this).data('name');
+    $('#btnNext').prop('disabled', false);
 });
 
-$('#btn-create').on('click', async () => {
-    if (selectedType === null) {
-        toastr.error('请选择提供商');
-        return;
+// 步骤导航
+$('#btnNext').on('click', async () => {
+    if (currentStep === 1) {
+        if (!selectedType) { toastr.error('请选择提供商'); return; }
+        showStep2();
+    } else if (currentStep === 2) {
+        if (!selectedModel) { toastr.error('请选择模型'); return; }
+        showStep3();
+    } else if (currentStep === 3) {
+        await createProvider();
+    }
+});
+
+$('#btnBack').on('click', () => {
+    if (currentStep === 2) showStep1();
+    else if (currentStep === 3) showStep2();
+});
+
+function showStep1() {
+    currentStep = 1;
+    $('#step1').show(); $('#step2, #step3').hide();
+    $('#stepTitle').text('步骤 1/3：选择 AI 提供商');
+    $('#stepDesc').text('选择你想使用的 AI 服务提供商');
+    $('#btnBack').hide();
+    $('#btnNext').text('下一步 →').prop('disabled', !selectedType);
+}
+
+function showStep2() {
+    currentStep = 2;
+    $('#step1, #step3').hide(); $('#step2').show();
+    $('#stepTitle').text('步骤 2/3：选择模型');
+    $('#stepDesc').text('选择适合你需求的模型');
+    $('#btnBack').show();
+    $('#btnNext').text('下一步 →').prop('disabled', true);
+    
+    $('#selectedProviderName').text(selectedProviderName);
+    
+    const models = modelOptions[selectedType] || [];
+    let html = '';
+    models.forEach(m => {
+        html += `<div class="model-card ${m.recommended ? 'selected' : ''}" data-model="${m.id}">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">${m.name}${m.recommended ? ' ⭐' : ''}</div>
+                    <div style="font-size: 12px; color: #666;">${m.desc}</div>
+                </div>
+                <div class="text-right">
+                    <div style="font-size: 11px; color: #999;">${m.price}</div>
+                    <div style="font-size: 11px; color: #999;">${m.context}</div>
+                </div>
+            </div>
+        </div>`;
+    });
+    $('#modelsList').html(html);
+    
+    if (models.length > 0 && models[0].recommended) {
+        selectedModel = models[0].id;
+        $('#btnNext').prop('disabled', false);
     }
     
-    const defaults = providerDefaults[selectedType];
+    $('.model-card').on('click', function() {
+        $('.model-card').removeClass('selected');
+        $(this).addClass('selected');
+        selectedModel = $(this).data('model');
+        $('#btnNext').prop('disabled', false);
+    });
+}
+
+function showStep3() {
+    currentStep = 3;
+    $('#step1, #step2').hide(); $('#step3').show();
+    $('#stepTitle').text('步骤 3/3：配置 API Key');
+    $('#stepDesc').text('输入 API Key 完成配置');
+    $('#btnNext').text('完成配置 ✓');
+    
+    const modelName = modelOptions[selectedType].find(m => m.id === selectedModel)?.name || selectedModel;
+    $('#step3ProviderInfo').text(`${selectedProviderName} - ${modelName}`);
+    $('#apiKeyHelp').text(providerConfig[selectedType].help);
+    $('#configNameInput').val(`${selectedProviderName} ${modelName}`);
+    $('#baseUrlInput').val(providerConfig[selectedType].url);
+    
+    if (selectedType === 201) {
+        $('#apiKeyInput').val('本地运行，无需密钥').prop('disabled', true);
+        $('#btnNext').prop('disabled', false);
+    } else {
+        $('#apiKeyInput').val('').prop('disabled', false);
+        $('#btnNext').prop('disabled', true);
+    }
+}
+
+$('#apiKeyInput').on('input', function() {
+    $('#btnNext').prop('disabled', !$(this).val() && selectedType !== 201);
+});
+
+$('#btnPaste').on('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        $('#apiKeyInput').val(text.trim());
+        $('#btnNext').prop('disabled', false);
+    } catch (e) {
+        toastr.error('无法访问剪贴板');
+    }
+});
+
+async function createProvider() {
     const data = {
-        name: $('#configName').val(),
+        name: $('#configNameInput').val() || `${selectedProviderName} ${selectedModel}`,
         providerType: selectedType,
-        modelId: $('#modelId').val(),
-        baseUrl: defaults.url,
+        modelId: selectedModel,
+        baseUrl: $('#baseUrlInput').val() || providerConfig[selectedType].url,
         isEnabled: true,
         priority: 1,
-        settings: {
-            temperature: 0.7,
-            maxTokens: 2000,
-            timeoutSeconds: 60,
-            maxRetries: 3
-        }
+        settings: { temperature: 0.7, maxTokens: 2000, timeoutSeconds: 60, maxRetries: 3 }
     };
     
     try {
-        $('#btn-create').prop('disabled', true).text('创建中...');
+        $('#btnNext').prop('disabled', true).text('配置中...');
         
         const resp = await fetch('@Url.Action("Create")', {
             method: 'POST',
@@ -107,46 +349,33 @@ $('#btn-create').on('click', async () => {
             body: JSON.stringify(data)
         });
         
-        if (!resp.ok) {
-            toastr.error('创建失败');
-            return;
-        }
+        if (!resp.ok) { toastr.error('创建失败'); return; }
         
         const provider = await resp.json();
         
-        // 添加 API Key
-        if (selectedType !== 14 && $('#apiKey').val()) {
-            await fetch('@Url.Action("AddApiKey")?id=' + provider.id, {
+        if (selectedType !== 201 && $('#apiKeyInput').val()) {
+            await fetch(`@Url.Action("AddApiKey")?id=${provider.id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ keyName: '主密钥', apiKey: $('#apiKey').val() })
+                body: JSON.stringify({ keyName: '主密钥', apiKey: $('#apiKeyInput').val() })
             });
         }
         
-        // 测试连接
-        $('#btn-create').text('测试连接...');
-        const testResp = await fetch('@Url.Action("TestConnection")?id=' + provider.id, { method: 'POST' });
+        $('#btnNext').text('测试连接...');
+        const testResp = await fetch(`@Url.Action("TestConnection")?id=${provider.id}`, { method: 'POST' });
         const testResult = await testResp.json();
         
         if (testResult.isHealthy) {
             toastr.success('配置成功！正在跳转...');
-            setTimeout(() => {
-                location.href = '@Url.Action("Index")';
-            }, 1000);
+            setTimeout(() => window.location.replace('@Url.Action("Index")'), 1000);
         } else {
             toastr.warning('配置已保存，但连接测试失败。正在跳转...');
-            setTimeout(() => {
-                location.href = '@Url.Action("Index")';
-            }, 2000);
+            setTimeout(() => window.location.replace('@Url.Action("Index")'), 2000);
         }
     } catch (e) {
         toastr.error('创建失败: ' + e);
-        $('#btn-create').prop('disabled', false).text('创建并测试');
+        $('#btnNext').prop('disabled', false).text('完成配置 ✓');
     }
-});
+}
 </script>
-<style>
-.cursor-pointer { cursor: pointer; }
-.provider-card:hover { box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-</style>
 }

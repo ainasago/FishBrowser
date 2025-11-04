@@ -25,23 +25,46 @@
 @section Scripts {
 <script>
 const providerTypeColors = {
-    0: '#10A37F', 1: '#10A37F', 2: '#4285F4', 3: '#D97757', 4: '#FF6A00',
-    5: '#624AFF', 6: '#00D4AA', 7: '#2932E1', 8: '#006EFF', 9: '#1E88E5',
-    10: '#FF6A00', 11: '#7C3AED', 12: '#FF6A00', 13: '#FF6A00', 14: '#6B7280',
-    15: '#6B7280', 16: '#6B7280'
+    1: '#10A37F',    // OpenAI
+    2: '#10A37F',    // AzureOpenAI
+    3: '#4285F4',    // GoogleGemini
+    4: '#D97757',    // AnthropicClaude
+    5: '#624AFF',    // Cohere
+    6: '#00D4AA',    // MistralAI
+    101: '#FF6A00',  // AlibabaQwen
+    102: '#2932E1',  // BaiduErnie
+    103: '#006EFF',  // TencentHunyuan
+    104: '#1E88E5',  // ZhipuGLM
+    105: '#FF6A00',  // XunfeiSpark
+    106: '#7C3AED',  // MoonshotAI
+    107: '#FF6A00',  // MiniMax
+    108: '#FF6A00',  // ZeroOneYi
+    109: '#624AFF',  // ModelScope
+    110: '#00D4AA',  // SiliconFlow
+    201: '#6B7280',  // Ollama
+    202: '#6B7280',  // LMStudio
+    203: '#6B7280'   // LocalAI
 };
 
 const providerTypeNames = {
-    0: 'OpenAI', 1: 'Azure OpenAI', 2: 'Google Gemini', 3: 'Claude', 4: '通义千问',
-    5: '魔塔社区', 6: '硅基流动', 7: '文心一言', 8: '腾讯混元', 9: '智谱 GLM',
-    10: '讯飞星火', 11: 'Moonshot', 12: 'MiniMax', 13: '零一万物', 14: 'Ollama',
-    15: 'LM Studio', 16: 'LocalAI'
+    1: 'OpenAI', 2: 'Azure OpenAI', 3: 'Google Gemini', 4: 'Claude', 5: 'Cohere', 6: 'Mistral AI',
+    101: '通义千问', 102: '文心一言', 103: '腾讯混元', 104: '智谱 GLM', 105: '讯飞星火',
+    106: 'Moonshot', 107: 'MiniMax', 108: '零一万物', 109: '魔塔社区', 110: '硅基流动',
+    201: 'Ollama', 202: 'LM Studio', 203: 'LocalAI'
 };
 
 async function loadProviders() {
     try {
-        const resp = await fetch('@Url.Action("GetAll")');
+        const resp = await fetch('@Url.Action("GetAll")' + '?t=' + new Date().getTime());
         const providers = await resp.json();
+        
+        // 完全移除并重新创建容器
+        const container = document.getElementById('providersList');
+        const parent = container.parentNode;
+        const newContainer = document.createElement('div');
+        newContainer.id = 'providersList';
+        newContainer.className = 'row';
+        parent.replaceChild(newContainer, container);
         
         if (!providers || providers.length === 0) {
             $('#emptyState').show();
@@ -50,15 +73,16 @@ async function loadProviders() {
         }
 
         $('#emptyState').hide();
-        $('#providersList').show().html('');
+        $('#providersList').show();
 
+        // 构建所有卡片的 HTML
+        let html = '';
         providers.forEach(p => {
             const color = providerTypeColors[p.providerType] || '#0078D4';
             const typeName = providerTypeNames[p.providerType] || 'Unknown';
-            const statusColor = p.isEnabled ? '#4CAF50' : '#999';
             
-            const card = `
-                <div class="col-12 col-md-6 col-lg-4 mb-3">
+            html += `
+                <div class="col-12 col-md-6 col-lg-4 mb-3" data-provider-id="${p.id}">
                     <div class="card">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -80,10 +104,15 @@ async function loadProviders() {
                     </div>
                 </div>
             `;
-            $('#providersList').append(card);
         });
+        
+        // 一次性设置所有 HTML
+        document.getElementById('providersList').innerHTML = html;
+        
+        console.log('Loaded providers:', providers.length);
     } catch (e) {
         toastr.error('加载失败: ' + e);
+        console.error('Load providers error:', e);
     }
 }
 
@@ -106,9 +135,11 @@ async function deleteProvider(id) {
     try {
         const resp = await fetch('@Url.Action("Delete")?id=' + id, { method: 'DELETE' });
         if (resp.ok) {
-            toastr.success('删除成功');
-            // 延迟刷新，确保后端删除完成
-            setTimeout(() => loadProviders(), 300);
+            toastr.success('删除成功，正在刷新...');
+            // 删除成功后直接刷新整个页面
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 500);
         } else {
             const error = await resp.text();
             toastr.error('删除失败: ' + error);

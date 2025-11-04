@@ -60,9 +60,11 @@ public class AIProviderService : IAIProviderService
     {
         try
         {
+            // 使用 AsSplitQuery 避免笛卡尔积导致的重复数据
             var providers = await _db.AIProviderConfigs
                 .Include(p => p.ApiKeys)
                 .Include(p => p.Settings)
+                .AsSplitQuery()  // 关键：分离查询，避免重复
                 .OrderBy(p => p.Priority)
                 .ThenBy(p => p.Name)
                 .ToListAsync();
@@ -84,6 +86,7 @@ public class AIProviderService : IAIProviderService
             var provider = await _db.AIProviderConfigs
                 .Include(p => p.ApiKeys)
                 .Include(p => p.Settings)
+                .AsSplitQuery()  // 避免重复数据
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             return provider;
@@ -136,12 +139,37 @@ public class AIProviderService : IAIProviderService
     {
         try
         {
-            var provider = await _db.AIProviderConfigs.FindAsync(id);
+            // 加载完整的 Provider 及其关联数据
+            var provider = await _db.AIProviderConfigs
+                .Include(p => p.ApiKeys)
+                .Include(p => p.Settings)
+                .FirstOrDefaultAsync(p => p.Id == id);
+                
             if (provider != null)
             {
+                // 显式删除关联的 API Keys
+                if (provider.ApiKeys != null && provider.ApiKeys.Any())
+                {
+                    _db.AIApiKeys.RemoveRange(provider.ApiKeys);
+                }
+                
+                // 显式删除关联的 Settings
+                if (provider.Settings != null)
+                {
+                    _db.AIProviderSettings.Remove(provider.Settings);
+                }
+                
+                // 删除 Provider
                 _db.AIProviderConfigs.Remove(provider);
+                
+                // 保存更改
                 await _db.SaveChangesAsync();
-                _logger.LogInfo("AIProvider", $"Deleted provider: {provider.Name}");
+                
+                _logger.LogInfo("AIProvider", $"Deleted provider and its related data: {provider.Name} (ID: {id})");
+            }
+            else
+            {
+                _logger.LogWarn("AIProvider", $"Provider {id} not found for deletion");
             }
         }
         catch (Exception ex)

@@ -277,12 +277,18 @@ function editApiKey(keyId, keyName, dailyLimit) {
 }
 
 async function deleteApiKey(keyId) {
-    if (!confirm('确定删除此密钥吗？')) return;
+    if (!confirm('确定删除此密钥吗？\n\n删除后将无法恢复。')) return;
     try {
         const resp = await fetch('@Url.Action("DeleteApiKey")?keyId=' + keyId, { method: 'DELETE' });
         if (resp.ok) {
-            toastr.success('删除成功');
-            loadProvider();
+            toastr.success('删除成功，正在刷新...');
+            // 删除成功后刷新页面
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 500);
+        } else {
+            const error = await resp.text();
+            toastr.error('删除失败: ' + error);
         }
     } catch (e) {
         toastr.error('删除失败: ' + e);
