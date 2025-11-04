@@ -608,13 +608,51 @@ function addMessage(type, content) {
     const messages = $('#chatMessages');
     const messageClass = type === 'user' ? 'message-user' : (type === 'ai' ? 'message-ai' : 'message-system');
     
+    // 清理 ANSI 颜色代码
+    const cleanContent = cleanAnsiCodes(content);
+    
+    // 生成唯一 ID
+    const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    
     messages.append(`
         <div class="message ${messageClass}">
-            <div class="message-bubble">${content.replace(/\n/g, '<br>')}</div>
+            <div class="message-bubble" style="position: relative;">
+                <button class="btn btn-sm btn-outline-secondary" 
+                        style="position: absolute; top: 8px; right: 8px; padding: 2px 8px; font-size: 11px;"
+                        onclick="copyMessage('${messageId}')"
+                        title="复制消息">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <div id="${messageId}">${cleanContent.replace(/\n/g, '<br>')}</div>
+            </div>
         </div>
     `);
     
     messages.scrollTop(messages[0].scrollHeight);
+}
+
+// 清理 ANSI 颜色代码
+function cleanAnsiCodes(text) {
+    // 移除 ANSI 转义序列
+    return text.replace(/\x1b\[[0-9;]*m/g, '')
+               .replace(/\[([0-9]+)m/g, '');
+}
+
+// 复制消息
+function copyMessage(messageId) {
+    const element = document.getElementById(messageId);
+    if (!element) return;
+    
+    // 获取纯文本内容（移除 HTML 标签）
+    const text = element.innerHTML.replace(/<br>/g, '\n').replace(/<[^>]*>/g, '');
+    
+    // 复制到剪贴板
+    navigator.clipboard.writeText(text).then(() => {
+        toastr.success('已复制到剪贴板');
+    }).catch(err => {
+        console.error('复制失败:', err);
+        toastr.error('复制失败');
+    });
 }
 
 // 执行脚本

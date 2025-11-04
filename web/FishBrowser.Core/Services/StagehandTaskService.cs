@@ -88,10 +88,17 @@ namespace FishBrowser.WPF.Services
 
 ⚠️ **重要**：Stagehand 3.x 使用 `stagehand.context.pages()[0]` 获取 page 对象，不再直接使用 `stagehand.page`
 
+⚠️ **禁止使用任何等待方法**：
+- ❌ `page.waitForTimeout()` - 已弃用
+- ❌ `page.waitForLoadState()` - 可能超时
+- ✅ Stagehand 的 `act()` 方法内置智能等待，无需手动等待
+
 1. **获取 Page 对象**
    ```javascript
    const page = stagehand.context.pages()[0];
    await page.goto('https://example.com');
+   // 不需要等待，直接执行操作
+   await stagehand.act('点击按钮');  // 内置智能等待
    ```
 
 2. **act(instruction)** - 执行操作
@@ -251,6 +258,46 @@ const { Stagehand } = require('@browserbasehq/stagehand');
                         "$1,\n        model: 'google/gemini-2.0-flash-exp'\n    $2",
                         RegexOptions.Multiline);
                 }
+            }
+            
+            // 移除已弃用的 waitForTimeout
+            if (script.Contains("waitForTimeout"))
+            {
+                _logService.LogWarn("StagehandTask", "Script uses deprecated waitForTimeout, removing...");
+                
+                // 移除 page.waitForTimeout() 调用
+                script = Regex.Replace(
+                    script,
+                    @"await page\.waitForTimeout\(\d+\);\s*\n",
+                    "",
+                    RegexOptions.Multiline);
+                
+                // 也移除可能的注释
+                script = Regex.Replace(
+                    script,
+                    @"//.*等待.*\n\s*await page\.waitForTimeout\(\d+\);\s*\n",
+                    "",
+                    RegexOptions.Multiline);
+            }
+            
+            // 移除 waitForLoadState (可能导致超时)
+            if (script.Contains("waitForLoadState"))
+            {
+                _logService.LogWarn("StagehandTask", "Script uses waitForLoadState, removing (Stagehand has built-in waiting)...");
+                
+                // 移除 page.waitForLoadState() 调用
+                script = Regex.Replace(
+                    script,
+                    @"await page\.waitForLoadState\([^)]*\);\s*\n",
+                    "",
+                    RegexOptions.Multiline);
+                
+                // 也移除可能的注释
+                script = Regex.Replace(
+                    script,
+                    @"//.*等待.*加载.*\n\s*await page\.waitForLoadState\([^)]*\);\s*\n",
+                    "",
+                    RegexOptions.Multiline);
             }
 
             // 如果脚本不完整，使用模板包装
