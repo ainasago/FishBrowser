@@ -1,0 +1,291 @@
+<Page x:Class="FishBrowser.WPF.Views.FingerprintConfigView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Title="指纹配置">
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题 -->
+        <TextBlock Grid.Row="0" Text="指纹配置" FontSize="24" FontWeight="Bold" Margin="20,20,20,0"/>
+
+        <!-- 工具栏 -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="20,20,20,0">
+            <Button x:Name="NewTemplateButton" Content="新建模板" Background="#0078D4" Foreground="White" Padding="15,8" Cursor="Hand" Click="NewTemplate_Click"/>
+            <Button x:Name="ImportOverrideButton" Content="导入" Background="#F0F0F0" Padding="15,8" Margin="10,0,0,0" Cursor="Hand" Click="ImportOverride_Click"/>
+            <Button x:Name="ExportButton" Content="导出" Background="#F0F0F0" Padding="15,8" Margin="10,0,0,0" Cursor="Hand" Click="Export_Click"/>
+            <Button x:Name="GenerateFromMetaButton" Content="从元配置生成" Background="#F0F0F0" Padding="15,8" Margin="10,0,0,0" Cursor="Hand" Click="GenerateFromMeta_Click"/>
+            <Button x:Name="OpenValidationButton" Content="校验元配置" Background="#F0F0F0" Padding="15,8" Margin="10,0,0,0" Cursor="Hand" Click="OpenValidation_Click"/>
+            <Button x:Name="DeleteButton" Content="删除" Background="#F0F0F0" Padding="15,8" Margin="10,0,0,0" Cursor="Hand" Click="Delete_Click"/>
+            <Separator Background="#E0E0E0" Width="1" Margin="15,0"/>
+            <Button x:Name="PresetsButton" Content="预设模板" Background="#107C10" Foreground="White" Padding="15,8" Cursor="Hand" Click="Presets_Click"/>
+            <Button x:Name="RestorePresetsButton" Content="一键还原" Background="#107C10" Foreground="White" Padding="15,8" Margin="10,0,0,0" Cursor="Hand" Click="RestorePresets_Click"/>
+        </StackPanel>
+
+        <!-- 内容区域 -->
+        <Grid Grid.Row="2" Margin="20,20,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 模板列表 -->
+            <Border Grid.Column="0" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="#F5F5F5" BorderThickness="0,0,0,1" BorderBrush="#E0E0E0">
+                        <TextBlock Text="模板列表 (支持多选)" FontWeight="Bold" Padding="10"/>
+                    </Border>
+                    
+                    <DataGrid Grid.Row="1" x:Name="TemplateDataGrid" AutoGenerateColumns="False" SelectionMode="Extended" SelectionChanged="TemplateDataGrid_SelectionChanged" Background="White" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <!-- 选择列：行前复选框，表头为全选复选框 -->
+                            <DataGridTemplateColumn Width="40">
+                                <DataGridTemplateColumn.Header>
+                                    <CheckBox x:Name="HeaderSelectAllCheckBox"
+                                              IsThreeState="True"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Center"
+                                              Click="SelectAllCheckBox_Click"
+                                              Loaded="HeaderSelectAllCheckBox_Loaded"/>
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                  IsChecked="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="User-Agent" Binding="{Binding UserAgent}" Width="150" Visibility="Collapsed"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- 编辑区域 -->
+            <Border Grid.Column="1" Background="White" BorderThickness="1" BorderBrush="#E0E0E0" Margin="20,0,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Tab 控件 -->
+                    <TabControl Grid.Row="0" x:Name="ConfigTabControl" Background="White">
+                        <!-- Tab 1: 基础信息 -->
+                        <TabItem Header="基础信息" Background="White">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="20">
+                                    <!-- 模板名称 -->
+                                    <TextBlock Text="模板名称 *" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="NameTextBox" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0"/>
+
+                                    <!-- User-Agent -->
+                                    <TextBlock Text="User-Agent *" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="UserAgentTextBox" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0" Height="80" TextWrapping="Wrap" VerticalAlignment="Top"/>
+
+                                    <!-- Accept-Language -->
+                                    <TextBlock Text="Accept-Language" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="AcceptLanguageCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <ComboBoxItem>zh-CN,zh;q=0.9,en;q=0.8</ComboBoxItem>
+                                        <ComboBoxItem>en-US,en;q=0.9</ComboBoxItem>
+                                        <ComboBoxItem>ja-JP,ja;q=0.9</ComboBoxItem>
+                                        <ComboBoxItem>ko-KR,ko;q=0.9</ComboBoxItem>
+                                    </ComboBox>
+
+                                    <!-- Viewport -->
+                                    <TextBlock Text="Viewport (宽 × 高)" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" x:Name="ViewportWidthBox" Text="1920" Padding="10" Background="White" BorderThickness="1" BorderBrush="#E0E0E0"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center" Margin="10,0"/>
+                                        <TextBox Grid.Column="2" x:Name="ViewportHeightBox" Text="1080" Padding="10" Background="White" BorderThickness="1" BorderBrush="#E0E0E0"/>
+                                    </Grid>
+
+                                    <!-- Timezone -->
+                                    <TextBlock Text="Timezone" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="TimezoneCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <ComboBoxItem>Asia/Shanghai</ComboBoxItem>
+                                        <ComboBoxItem>Asia/Hong_Kong</ComboBoxItem>
+                                        <ComboBoxItem>America/New_York</ComboBoxItem>
+                                        <ComboBoxItem>Europe/London</ComboBoxItem>
+                                        <ComboBoxItem>Europe/Paris</ComboBoxItem>
+                                        <ComboBoxItem>Australia/Sydney</ComboBoxItem>
+                                    </ComboBox>
+
+                                    <!-- Locale -->
+                                    <TextBlock Text="Locale" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="LocaleCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <ComboBoxItem>zh-CN</ComboBoxItem>
+                                        <ComboBoxItem>en-US</ComboBoxItem>
+                                        <ComboBoxItem>ja-JP</ComboBoxItem>
+                                        <ComboBoxItem>ko-KR</ComboBoxItem>
+                                        <ComboBoxItem>fr-FR</ComboBoxItem>
+                                        <ComboBoxItem>de-DE</ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- Tab 2: 高级指纹 -->
+                        <TabItem Header="高级指纹" Background="White">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="20">
+                                    <!-- Canvas 指纹 -->
+                                    <TextBlock Text="Canvas 指纹" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="CanvasFingerprintCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <ComboBoxItem>默认</ComboBoxItem>
+                                        <ComboBoxItem>预设 1</ComboBoxItem>
+                                        <ComboBoxItem>预设 2</ComboBoxItem>
+                                        <ComboBoxItem>预设 3</ComboBoxItem>
+                                    </ComboBox>
+
+                                    <!-- WebGL 指纹 -->
+                                    <TextBlock Text="WebGL 渲染器" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="WebGLRendererCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <ComboBoxItem>Intel Iris Graphics 640</ComboBoxItem>
+                                        <ComboBoxItem>NVIDIA GeForce GTX 1080</ComboBoxItem>
+                                        <ComboBoxItem>AMD Radeon RX 580</ComboBoxItem>
+                                        <ComboBoxItem>Apple M1</ComboBoxItem>
+                                    </ComboBox>
+
+                                    <!-- WebGL 供应商 -->
+                                    <TextBlock Text="WebGL 供应商" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="WebGLVendorCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <ComboBoxItem>Intel Inc.</ComboBoxItem>
+                                        <ComboBoxItem>NVIDIA Corporation</ComboBoxItem>
+                                        <ComboBoxItem>AMD</ComboBoxItem>
+                                        <ComboBoxItem>Apple Inc.</ComboBoxItem>
+                                    </ComboBox>
+
+                                    <!-- 字体列表 -->
+                                    <TextBlock Text="字体预设" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="FontPresetCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <ComboBoxItem>Windows 标准</ComboBoxItem>
+                                        <ComboBoxItem>Mac 标准</ComboBoxItem>
+                                        <ComboBoxItem>Linux 标准</ComboBoxItem>
+                                        <ComboBoxItem>自定义</ComboBoxItem>
+                                    </ComboBox>
+
+                                    <!-- 音频采样率 -->
+                                    <TextBlock Text="音频采样率" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="AudioSampleRateCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <ComboBoxItem>44100 Hz</ComboBoxItem>
+                                        <ComboBoxItem>48000 Hz</ComboBoxItem>
+                                        <ComboBoxItem>96000 Hz</ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- Tab 3: 安全设置 -->
+                        <TabItem Header="安全设置" Background="White">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="20">
+                                    <!-- WebRTC 防护 -->
+                                    <Border Background="#F5F5F5" BorderThickness="1" BorderBrush="#E0E0E0" Padding="15" Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <CheckBox x:Name="DisableWebRTCCheckBox" Content="禁用 WebRTC (防止 IP 泄露)" FontWeight="Bold" Margin="0,0,0,5"/>
+                                            <TextBlock Text="启用此选项可防止通过 WebRTC 泄露真实 IP 地址" Foreground="#666666" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- DNS 防护 -->
+                                    <Border Background="#F5F5F5" BorderThickness="1" BorderBrush="#E0E0E0" Padding="15" Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <CheckBox x:Name="DisableDNSLeakCheckBox" Content="防止 DNS 泄露" FontWeight="Bold" Margin="0,0,0,5"/>
+                                            <TextBlock Text="启用此选项可通过代理防止 DNS 查询泄露" Foreground="#666666" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Geolocation 权限 -->
+                                    <Border Background="#F5F5F5" BorderThickness="1" BorderBrush="#E0E0E0" Padding="15" Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <CheckBox x:Name="DisableGeolocationCheckBox" Content="禁用地理位置" FontWeight="Bold" Margin="0,0,0,5"/>
+                                            <TextBlock Text="启用此选项可禁用浏览器地理位置功能" Foreground="#666666" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- 权限管理 -->
+                                    <Border Background="#F5F5F5" BorderThickness="1" BorderBrush="#E0E0E0" Padding="15" Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <CheckBox x:Name="RestrictPermissionsCheckBox" Content="限制浏览器权限" FontWeight="Bold" Margin="0,0,0,5"/>
+                                            <TextBlock Text="启用此选项可限制摄像头、麦克风等权限请求" Foreground="#666666" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- DNT 标记 -->
+                                    <Border Background="#F5F5F5" BorderThickness="1" BorderBrush="#E0E0E0" Padding="15" Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <CheckBox x:Name="EnableDNTCheckBox" Content="启用 DNT (不追踪) 标记" FontWeight="Bold" Margin="0,0,0,5"/>
+                                            <TextBlock Text="启用此选项可在请求头中添加 DNT 标记" Foreground="#666666" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- Tab 4: 自定义属性 -->
+                        <TabItem Header="自定义属性" Background="White">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="20">
+                                    <!-- 自定义 JavaScript -->
+                                    <TextBlock Text="自定义 JavaScript 注入脚本" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="CustomJSTextBox" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0" Height="100" TextWrapping="Wrap" VerticalAlignment="Top" AcceptsReturn="True"/>
+
+                                    <!-- 自定义请求头 -->
+                                    <TextBlock Text="自定义请求头 (JSON 格式)" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="CustomHeadersTextBox" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0" Height="100" TextWrapping="Wrap" VerticalAlignment="Top" AcceptsReturn="True" Text="{}{&#x0A;  &quot;X-Custom-Header&quot;: &quot;value&quot;&#x0A;}"/>
+
+                                    <!-- 自定义 Cookie -->
+                                    <TextBlock Text="自定义 Cookie (JSON 格式)" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="CustomCookiesTextBox" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0" Height="100" TextWrapping="Wrap" VerticalAlignment="Top" AcceptsReturn="True" Text="{}{&#x0A;  &quot;name&quot;: &quot;value&quot;&#x0A;}"/>
+
+                                    <!-- 设备内存 -->
+                                    <TextBlock Text="设备内存 (GB)" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="DeviceMemoryCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <ComboBoxItem>4</ComboBoxItem>
+                                        <ComboBoxItem>8</ComboBoxItem>
+                                        <ComboBoxItem>16</ComboBoxItem>
+                                        <ComboBoxItem>32</ComboBoxItem>
+                                    </ComboBox>
+
+                                    <!-- 处理器核心数 -->
+                                    <TextBlock Text="处理器核心数" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="ProcessorCountCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0">
+                                        <ComboBoxItem>2</ComboBoxItem>
+                                        <ComboBoxItem>4</ComboBoxItem>
+                                        <ComboBoxItem>8</ComboBoxItem>
+                                        <ComboBoxItem>16</ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
+
+                    <!-- 按钮 -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,15,20,15">
+                        <Button x:Name="SaveButton" Content="保存" Background="#0078D4" Foreground="White" Padding="20,10" Cursor="Hand" Click="Save_Click"/>
+                        <Button x:Name="CancelButton" Content="取消" Background="#F0F0F0" Padding="20,10" Margin="10,0,0,0" Cursor="Hand" Click="Cancel_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

@@ -1,0 +1,8 @@
+{
+  "trait": "headers.order",
+  "options": [
+    ["user-agent","accept-language","accept-encoding","accept","connection","upgrade-insecure-requests"],
+    ["user-agent","accept","accept-language","accept-encoding","connection"],
+    ["accept","accept-language","user-agent","accept-encoding","connection"]
+  ]
+}

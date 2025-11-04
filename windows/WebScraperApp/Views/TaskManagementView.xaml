@@ -1,0 +1,36 @@
+<Page x:Class="FishBrowser.WPF.Views.TaskManagementView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Title="任务管理">
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题 -->
+        <TextBlock Grid.Row="0" Text="任务管理" FontSize="24" FontWeight="Bold" Margin="20,20,20,0"/>
+
+        <!-- 工具栏 -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="20,20,20,0">
+            <Button x:Name="NewTaskButton" Content="新建任务" Background="#0078D4" Foreground="White" Padding="15,8" Cursor="Hand" Click="NewTask_Click"/>
+            <Button x:Name="RefreshButton" Content="刷新" Background="#F0F0F0" Padding="15,8" Margin="10,0,0,0" Cursor="Hand" Click="Refresh_Click"/>
+            <Button x:Name="ExportButton" Content="导出" Background="#F0F0F0" Padding="15,8" Margin="10,0,0,0" Cursor="Hand" Click="Export_Click"/>
+        </StackPanel>
+
+        <!-- 任务列表 -->
+        <DataGrid Grid.Row="2" x:Name="TaskDataGrid" AutoGenerateColumns="False" Background="White" BorderThickness="1" BorderBrush="#E0E0E0" Margin="20,20,20,20" SelectionMode="Extended" SelectionUnit="FullRow" CanUserAddRows="False" CanUserDeleteRows="False" PreviewKeyDown="TaskDataGrid_PreviewKeyDown">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" IsReadOnly="True"/>
+                <DataGridTextColumn Header="URL" Binding="{Binding Url}" Width="300" IsReadOnly="True"/>
+                <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80" IsReadOnly="True"/>
+                <DataGridTextColumn Header="创建时间" Binding="{Binding CreatedAt, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="150" IsReadOnly="True"/>
+                <DataGridTextColumn Header="完成时间" Binding="{Binding CompletedAt, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="150" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

@@ -1,0 +1,8 @@
+{
+  "traits": {
+    "permissions.geolocation": ["allow", "deny", "prompt"],
+    "permissions.camera": ["allow", "deny", "prompt"],
+    "permissions.microphone": ["allow", "deny", "prompt"],
+    "permissions.notifications": ["allow", "deny", "prompt"]
+  }
+}

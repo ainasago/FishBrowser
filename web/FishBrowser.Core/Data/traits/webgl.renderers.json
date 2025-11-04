@@ -1,0 +1,9 @@
+{
+  "trait": "graphics.webgl.renderer",
+  "options": [
+    {"value": "ANGLE (NVIDIA GeForce GTX 1650 Direct3D11 vs_5_0 ps_5_0)", "label": "GTX 1650", "weight": 0.15, "vendor": "NVIDIA"},
+    {"value": "ANGLE (Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", "label": "UHD 620", "weight": 0.2, "vendor": "Intel"},
+    {"value": "ANGLE (AMD Radeon RX 580 Series Direct3D11 vs_5_0 ps_5_0)", "label": "RX 580", "weight": 0.1, "vendor": "AMD"},
+    {"value": "ANGLE (Intel(R) Iris(R) Xe Graphics Direct3D11 vs_5_0 ps_5_0)", "label": "Iris Xe", "weight": 0.18, "vendor": "Intel"}
+  ]
+}

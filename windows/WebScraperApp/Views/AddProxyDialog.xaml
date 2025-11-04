@@ -1,0 +1,54 @@
+<Window x:Class="FishBrowser.WPF.Views.AddProxyDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="添加代理" Height="520" Width="500" WindowStartupLocation="CenterOwner" ResizeMode="CanResize" MinWidth="420" MinHeight="420">
+    <DockPanel Background="White" LastChildFill="True">
+        <!-- 底部按钮固定：先声明，确保后面的 ScrollViewer 作为最后一个子元素填充剩余空间 -->
+        <DockPanel DockPanel.Dock="Bottom" LastChildFill="False" Margin="20,0,20,20">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button x:Name="SaveButton" Content="保存" Background="#0078D4" Foreground="White" Padding="20,10" Cursor="Hand" Click="Save_Click" IsDefault="True"/>
+                <Button x:Name="CancelButton" Content="取消" Background="#F0F0F0" Padding="20,10" Margin="10,0,0,0" Cursor="Hand" Click="Cancel_Click" IsCancel="True"/>
+            </StackPanel>
+        </DockPanel>
+        <!-- 主体表单滚动区作为最后一个子元素，填充剩余空间 -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="20">
+            <!-- 标题 -->
+            <TextBlock Text="添加代理服务器" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <!-- 代理地址 -->
+            <TextBlock Text="代理地址 *" FontWeight="Bold" Margin="0,0,0,5"/>
+            <TextBox x:Name="AddressTextBox" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0"/>
+
+            <!-- 端口 -->
+            <TextBlock Text="端口 *" FontWeight="Bold" Margin="0,0,0,5"/>
+            <TextBox x:Name="PortTextBox" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0" Text="8080"/>
+
+            <!-- 协议 -->
+            <TextBlock Text="协议 *" FontWeight="Bold" Margin="0,0,0,5"/>
+            <ComboBox x:Name="ProtocolCombo" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0" SelectedIndex="0">
+                <ComboBoxItem>HTTP</ComboBoxItem>
+                <ComboBoxItem>HTTPS</ComboBoxItem>
+                <ComboBoxItem>SOCKS5</ComboBoxItem>
+            </ComboBox>
+
+            <!-- 用户名 -->
+            <TextBlock Text="用户名 (可选)" FontWeight="Bold" Margin="0,0,0,5"/>
+            <TextBox x:Name="UsernameTextBox" Padding="10" Margin="0,0,0,15" Background="White" BorderThickness="1" BorderBrush="#E0E0E0"/>
+
+            <!-- 密码 -->
+            <TextBlock Text="密码 (可选)" FontWeight="Bold" Margin="0,0,0,5"/>
+            <PasswordBox x:Name="PasswordBox" Padding="10" Margin="0,0,0,20" Background="White" BorderThickness="1" BorderBrush="#E0E0E0"/>
+
+            <!-- 所属池（可选） -->
+            <TextBlock Text="所属池 (可选)" FontWeight="Bold" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <ComboBox x:Name="PoolCombo" Width="320" Padding="10" Background="White" BorderThickness="1" BorderBrush="#E0E0E0" 
+                          DisplayMemberPath="Name" SelectedValuePath="Id"/>
+                <Button x:Name="AddPoolFromDialogButton" Content="新建池" Width="80" Margin="8,0,0,0" Click="AddPoolFromDialog_Click"/>
+            </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

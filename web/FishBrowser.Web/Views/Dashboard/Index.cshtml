@@ -1,0 +1,215 @@
+@{
+    ViewData["Title"] = "仪表板";
+    Layout = "_LayoutAdmin";
+    ViewBag.Username = ViewBag.Username ?? "管理员";
+    ViewBag.Role = ViewBag.Role ?? "管理员";
+}
+
+<!-- Small boxes (Stat box) -->
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3 id="browserCount">0</h3>
+                <p>浏览器环境</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-browser"></i>
+            </div>
+            <a asp-controller="Browser" asp-action="Index" class="small-box-footer">
+                更多信息 <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3 id="runningCount">0</h3>
+                <p>运行中的浏览器</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-play-circle"></i>
+            </div>
+            <a asp-controller="Browser" asp-action="Index" class="small-box-footer">
+                更多信息 <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3 id="groupCount">0</h3>
+                <p>浏览器分组</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-folder"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                更多信息 <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3 id="launchCount">0</h3>
+                <p>今日启动次数</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <a asp-controller="Browser" asp-action="Index" class="small-box-footer">
+                更多信息 <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <!-- ./col -->
+</div>
+<!-- /.row -->
+
+<!-- Main row -->
+<div class="row">
+    <!-- Left col -->
+    <section class="col-lg-7 connectedSortable">
+        <!-- Custom tabs (Charts with tabs)-->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-pie mr-1"></i>
+                    最近活动
+                </h3>
+            </div><!-- /.card-header -->
+            <div class="card-body">
+                <div class="tab-content p-0">
+                    <!-- Timeline -->
+                    <div class="timeline timeline-inverse" id="activityTimeline">
+                        <!-- timeline time label -->
+                        <div class="time-label">
+                            <span class="bg-info">
+                                @DateTime.Now.ToString("yyyy-MM-dd")
+                            </span>
+                        </div>
+                        <!-- /.timeline-label -->
+                        <!-- 活动将通过 JavaScript 动态加载 -->
+                        <div>
+                            <i class="far fa-clock bg-gray"></i>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </section>
+    <!-- /.Left col -->
+    <!-- right col (We are only adding the ID to make the widgets sortable)-->
+    <section class="col-lg-5 connectedSortable">
+
+        <!-- Calendar -->
+        <div class="card bg-gradient-success">
+            <div class="card-header border-0">
+                <h3 class="card-title">
+                    <i class="far fa-calendar-alt"></i>
+                    快速操作
+                </h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body pt-0">
+                <div class="row">
+                    <div class="col-12">
+                        <a href="@Url.Action("Create", "Browser")" class="btn btn-app bg-white">
+                            <i class="fas fa-plus"></i> 新建浏览器
+                        </a>
+                        <a href="@Url.Action("Index", "Browser")" class="btn btn-app bg-white">
+                            <i class="fas fa-list"></i> 浏览器列表
+                        </a>
+                        <a href="@Url.Action("Index", "Logs")" class="btn btn-app bg-white">
+                            <i class="fas fa-file-alt"></i> 查看日志
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.card -->
+
+        <!-- System Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    系统信息
+                </h3>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">系统版本</dt>
+                    <dd class="col-sm-8">FishBrowser v1.0.0</dd>
+                    
+                    <dt class="col-sm-4">API 地址</dt>
+                    <dd class="col-sm-8"><small>http://localhost:5062</small></dd>
+                    
+                    <dt class="col-sm-4">Web 地址</dt>
+                    <dd class="col-sm-8"><small>http://localhost:5208</small></dd>
+                    
+                    <dt class="col-sm-4">数据库</dt>
+                    <dd class="col-sm-8">SQLite</dd>
+                </dl>
+            </div>
+        </div>
+        <!-- /.card -->
+    </section>
+    <!-- right col -->
+</div>
+<!-- /.row (main row) -->
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadDashboardData();
+        });
+
+        function loadDashboardData() {
+            // 加载浏览器统计
+            $.ajax({
+                url: '@Url.Action("GetBrowsers", "Browser")',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        $('#browserCount').text(response.data.length);
+                    }
+                }
+            });
+
+            // 加载运行中的浏览器
+            $.ajax({
+                url: 'http://localhost:5062/api/browsers/running',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        $('#runningCount').text(Object.keys(response.data).length);
+                    }
+                }
+            });
+
+            // 加载分组统计
+            $.ajax({
+                url: '@Url.Action("GetGroups", "Browser")',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        $('#groupCount').text(response.data.length);
+                    }
+                }
+            });
+
+            // 模拟今日启动次数（实际应该从数据库统计）
+            $('#launchCount').text('--');
+        }
+    </script>
+}

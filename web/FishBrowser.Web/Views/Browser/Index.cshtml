@@ -1,0 +1,572 @@
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "浏览器管理";
+}
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- 统计卡片 -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3 id="totalCount">0</h3>
+                        <p>总数</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-browser"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3 id="runningCount">0</h3>
+                        <p>运行中</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3 id="groupCount">0</h3>
+                        <p>分组数</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-folder"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3 id="selectedCount">0</h3>
+                        <p>已选中</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-square"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 浏览器列表 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">浏览器列表</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-success btn-sm mr-2" onclick="createRandomBrowser()">
+                                <i class="fas fa-magic"></i> 一键创建随机浏览器
+                            </button>
+                            <a href="@Url.Action("Create")" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> 添加浏览器
+                            </a>
+                        </div>
+                    </div>
+                    <!-- 过滤器 -->
+                    <div class="card-body border-bottom">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group mb-2">
+                                    <label class="mb-1"><small>搜索</small></label>
+                                    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="名称、UA、备注...">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb-2">
+                                    <label class="mb-1"><small>分组</small></label>
+                                    <select id="groupFilter" class="form-control form-control-sm">
+                                        <option value="">全部分组</option>
+                                        <option value="-1">未分组</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb-2">
+                                    <label class="mb-1"><small>引擎</small></label>
+                                    <select id="engineFilter" class="form-control form-control-sm">
+                                        <option value="">全部引擎</option>
+                                        <option value="UndetectedChrome">UndetectedChrome</option>
+                                        <option value="Chromium">Chromium</option>
+                                        <option value="Firefox">Firefox</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb-2">
+                                    <label class="mb-1"><small>操作系统</small></label>
+                                    <select id="osFilter" class="form-control form-control-sm">
+                                        <option value="">全部系统</option>
+                                        <option value="windows">Windows</option>
+                                        <option value="macos">MacOS</option>
+                                        <option value="linux">Linux</option>
+                                        <option value="android">Android</option>
+                                        <option value="ios">iOS</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group mb-2">
+                                    <label class="mb-1"><small>排序</small></label>
+                                    <select id="sortByFilter" class="form-control form-control-sm">
+                                        <option value="createdat-desc">最新创建</option>
+                                        <option value="createdat-asc">最早创建</option>
+                                        <option value="name-asc">名称 A-Z</option>
+                                        <option value="name-desc">名称 Z-A</option>
+                                        <option value="launchcount-desc">启动次数↓</option>
+                                        <option value="launchcount-asc">启动次数↑</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="form-group mb-2">
+                                    <label class="mb-1"><small>&nbsp;</small></label>
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="applyFilters()">
+                                        <i class="fas fa-filter"></i> 筛选
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body table-responsive p-0">
+                        <table class="table table-hover text-nowrap">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll"></th>
+                                    <th>ID</th>
+                                    <th>名称</th>
+                                    <th>分组</th>
+                                    <th>引擎</th>
+                                    <th>系统</th>
+                                    <th>启动次数</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="browsersTableBody">
+                                <tr>
+                                    <td colspan="9" class="text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="sr-only">加载中...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer clearfix">
+                        <ul class="pagination pagination-sm m-0 float-right" id="pagination">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        let currentPage = 1;
+        const pageSize = 20;
+        let selectedBrowsers = new Set();
+        let runningIds = new Set(); // 正在运行的浏览器ID集合
+        let runningMap = {}; // { browserId: processId }
+
+        // 页面加载时初始化
+        $(document).ready(function() {
+            loadGroups();
+            loadStatistics();
+            loadRunning().always(function() {
+                loadBrowsers();
+            });
+            // 定时刷新运行中状态
+            setInterval(loadRunning, 5000);
+
+            // 搜索框回车事件
+            $('#searchInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    applyFilters();
+                }
+            });
+
+            // 过滤器变化时自动应用
+            $('#groupFilter, #engineFilter, #osFilter, #sortByFilter').on('change', function() {
+                applyFilters();
+            });
+
+            // 全选checkbox
+            $('#selectAll').on('change', function() {
+                const isChecked = $(this).is(':checked');
+                $('.browser-checkbox').prop('checked', isChecked);
+                updateSelectedCount();
+            });
+        });
+
+        // 加载分组列表
+        function loadGroups() {
+            $.ajax({
+                url: '@Url.Action("GetGroups")',
+                method: 'GET',
+                success: function(data) {
+                    const groupFilter = $('#groupFilter');
+                    // 保留"全部分组"和"未分组"选项
+                    groupFilter.find('option:gt(1)').remove();
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(function(group) {
+                            groupFilter.append(`<option value="${group.id}">${group.name}</option>`);
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error('加载分组列表失败:', xhr);
+                }
+            });
+        }
+
+        // 加载统计信息
+        function loadStatistics() {
+            $.ajax({
+                url: '@Url.Action("GetStatistics")',
+                method: 'GET',
+                success: function(data) {
+                    $('#totalCount').text(data.totalCount || 0);
+                    // runningCount 改由运行中接口实时更新
+                    $('#groupCount').text(data.groupCount || 0);
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '@Url.Action("Login", "Auth")';
+                    }
+                }
+            });
+        }
+
+        // 加载正在运行的浏览器并更新标记
+        function loadRunning() {
+            return $.ajax({
+                url: '@Url.Action("GetRunningBrowsers")',
+                method: 'GET',
+                success: function(resp) {
+                    if (resp && resp.success && resp.data) {
+                        runningMap = resp.data;
+                        const ids = Object.keys(runningMap).map(id => parseInt(id));
+                        runningIds = new Set(ids);
+                        $('#runningCount').text(ids.length);
+                        updateRunningIndicators();
+                    }
+                },
+                error: function(xhr) {
+                    console.error('加载运行中浏览器失败:', xhr);
+                }
+            });
+        }
+
+        // 加载浏览器列表
+        function loadBrowsers(page = 1) {
+            currentPage = page;
+            const search = $('#searchInput').val();
+            const groupId = $('#groupFilter').val();
+            const engine = $('#engineFilter').val();
+            const os = $('#osFilter').val();
+            const sortBy = $('#sortByFilter').val();
+            
+            // 解析排序字段和顺序
+            let sortField = 'createdat';
+            let sortOrder = 'desc';
+            if (sortBy) {
+                const parts = sortBy.split('-');
+                sortField = parts[0];
+                sortOrder = parts[1];
+            }
+            
+            $.ajax({
+                url: '@Url.Action("GetBrowsers")',
+                method: 'GET',
+                data: {
+                    page: page,
+                    pageSize: pageSize,
+                    search: search,
+                    groupId: groupId,
+                    engine: engine,
+                    os: os,
+                    sortBy: sortField,
+                    sortOrder: sortOrder
+                },
+                success: function(data) {
+                    renderBrowsers(data.items);
+                    renderPagination(data.page, data.totalPages);
+                    $('#totalCount').text(data.totalCount);
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '@Url.Action("Login", "Auth")';
+                    } else {
+                        showError('加载浏览器列表失败');
+                    }
+                }
+            });
+        }
+
+        // 应用过滤器
+        function applyFilters() {
+            loadBrowsers(1);
+        }
+
+        // 渲染浏览器列表
+        function renderBrowsers(browsers) {
+            const tbody = $('#browsersTableBody');
+            tbody.empty();
+
+            if (!browsers || browsers.length === 0) {
+                tbody.html('<tr><td colspan="9" class="text-center">暂无数据</td></tr>');
+                return;
+            }
+
+            browsers.forEach(browser => {
+                const isRunning = runningIds.has(browser.id);
+                const row = `
+                    <tr data-browser-id="${browser.id}">
+                        <td><input type="checkbox" class="browser-checkbox" data-id="${browser.id}"></td>
+                        <td>${browser.id}</td>
+                        <td>
+                            <strong>${browser.name}</strong>
+                            ${isRunning ? '<span class="badge badge-success ml-2">运行中</span>' : ''}
+                        </td>
+                        <td>${browser.groupName || '<span class="text-muted">未分组</span>'}</td>
+                        <td><span class="badge badge-info">${browser.engine}</span></td>
+                        <td>${browser.os}</td>
+                        <td>${browser.launchCount}</td>
+                        <td>${formatDate(browser.createdAt)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success launch-btn" onclick="launchBrowser(${browser.id})" title="启动" ${isRunning ? 'disabled' : ''}>
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning stop-btn" onclick="stopBrowser(${browser.id})" title="停止" ${!isRunning ? 'disabled' : ''}>
+                                <i class="fas fa-stop"></i>
+                            </button>
+                            <a href="@Url.Action("Edit")/?id=${browser.id}" class="btn btn-sm btn-info" title="编辑">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="btn btn-sm btn-danger" onclick="deleteBrowser(${browser.id})" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+
+            // 绑定checkbox事件
+            $('.browser-checkbox').on('change', updateSelectedCount);
+        }
+
+        // 根据 runningIds 更新已渲染表格中的“运行中”标记和按钮状态
+        function updateRunningIndicators() {
+            $('#browsersTableBody tr').each(function() {
+                const id = parseInt($(this).attr('data-browser-id'));
+                const nameCell = $(this).find('td').eq(2);
+                const launchBtn = $(this).find('button.launch-btn');
+                const stopBtn = $(this).find('button.stop-btn');
+                const isRunning = runningIds.has(id);
+
+                // 更新运行中徽标：先移除旧的，再按需要添加
+                nameCell.find('.badge-success').remove();
+                if (isRunning) {
+                    if (nameCell.find('.badge-success').length === 0) {
+                        nameCell.append('<span class="badge badge-success ml-2">运行中</span>');
+                    }
+                    launchBtn.attr('disabled', true);
+                    stopBtn.attr('disabled', false);
+                } else {
+                    launchBtn.attr('disabled', false);
+                    stopBtn.attr('disabled', true);
+                }
+            });
+        }
+
+        // 渲染分页
+        function renderPagination(currentPage, totalPages) {
+            const pagination = $('#pagination');
+            pagination.empty();
+
+            if (totalPages <= 1) return;
+
+            // 上一页
+            pagination.append(`
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadBrowsers(${currentPage - 1}); return false;">«</a>
+                </li>
+            `);
+
+            // 页码
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    pagination.append(`
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="loadBrowsers(${i}); return false;">${i}</a>
+                        </li>
+                    `);
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    pagination.append('<li class="page-item disabled"><span class="page-link">...</span></li>');
+                }
+            }
+
+            // 下一页
+            pagination.append(`
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadBrowsers(${currentPage + 1}); return false;">»</a>
+                </li>
+            `);
+        }
+
+        // 更新选中数量
+        function updateSelectedCount() {
+            const count = $('.browser-checkbox:checked').length;
+            $('#selectedCount').text(count);
+        }
+
+        // 启动浏览器
+        function launchBrowser(id) {
+            if (!confirm('确定要启动这个浏览器吗？')) return;
+
+            $.ajax({
+                url: '@Url.Action("LaunchBrowser")' + '?id=' + id,
+                method: 'POST',
+                success: function(data) {
+                    if (data.success) {
+                        showSuccess(data.message || '浏览器启动成功');
+                        // 启动成功后，立即刷新运行中状态与统计
+                        loadRunning();
+                        loadStatistics();
+                    } else {
+                        showError(data.error || '启动失败');
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '@Url.Action("Login", "Auth")';
+                    } else {
+                        showError('启动浏览器失败');
+                    }
+                }
+            });
+        }
+
+        // 停止浏览器
+        function stopBrowser(id) {
+            if (!confirm('确定要停止这个浏览器吗？')) return;
+
+            $.ajax({
+                url: '@Url.Action("StopBrowser")' + '?id=' + id,
+                method: 'POST',
+                success: function(data) {
+                    if (data.success) {
+                        showSuccess(data.message || '浏览器已停止');
+                        // 停止成功后，立即刷新运行中状态与统计
+                        loadRunning();
+                        loadStatistics();
+                    } else {
+                        showError(data.error || '停止失败');
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '@Url.Action("Login", "Auth")';
+                    } else {
+                        showError('停止浏览器失败');
+                    }
+                }
+            });
+        }
+
+
+        // 删除浏览器
+        function deleteBrowser(id) {
+            if (!confirm('确定要删除这个浏览器吗？')) return;
+
+            $.ajax({
+                url: '@Url.Action("DeleteBrowser")' + '?id=' + id,
+                method: 'DELETE',
+                success: function(data) {
+                    if (data.success) {
+                        showSuccess('删除成功');
+                        loadBrowsers(currentPage);
+                        loadStatistics();
+                    } else {
+                        showError(data.error || '删除失败');
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '@Url.Action("Login", "Auth")';
+                    } else {
+                        showError('删除失败');
+                    }
+                }
+            });
+        }
+
+        // 格式化日期
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        // 显示成功消息
+        function showSuccess(message) {
+            if (typeof toastr !== 'undefined') {
+                toastr.success(message);
+            } else {
+                alert(message);
+            }
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            if (typeof toastr !== 'undefined') {
+                toastr.error(message);
+            } else {
+                alert('错误: ' + message);
+            }
+        }
+
+        // 一键创建随机浏览器
+        function createRandomBrowser() {
+            if (!confirm('确定要创建一个随机浏览器环境吗？')) return;
+
+            // 显示加载提示
+            if (typeof toastr !== 'undefined') {
+                toastr.info('正在创建随机浏览器...');
+            }
+
+            $.ajax({
+                url: '@Url.Action("CreateRandomBrowser")',
+                method: 'POST',
+                success: function(data) {
+                    if (data.success) {
+                        showSuccess(data.message || '随机浏览器创建成功');
+                        // 刷新列表
+                        loadBrowsers(currentPage);
+                        loadStatistics();
+                    } else {
+                        showError(data.error || '创建失败');
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '@Url.Action("Login", "Auth")';
+                    } else {
+                        showError('创建随机浏览器失败');
+                    }
+                }
+            });
+        }
+    </script>
+}

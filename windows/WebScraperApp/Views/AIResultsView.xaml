@@ -1,0 +1,14 @@
+<Page x:Class="FishBrowser.WPF.Views.AIResultsView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Title="AI分析">
+    <Grid Background="White">
+        <StackPanel Margin="20">
+            <TextBlock Text="AI 分析结果" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+            <TextBlock Text="AI 分析结果展示功能将在后续版本中实现" Foreground="#999999"/>
+        </StackPanel>
+    </Grid>
+</Page>

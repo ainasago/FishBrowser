@@ -1,0 +1,326 @@
+<Page x:Class="FishBrowser.WPF.Views.AIDebugWorkbench"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      mc:Ignorable="d" 
+      d:DesignHeight="800" d:DesignWidth="1400"
+      Title="AI 脚本调试工作台">
+
+    <Grid Background="#F5F5F5">
+        <!-- 顶部工具栏 -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 工具栏 -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧：标题 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="🔧" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="AI 脚本调试工作台" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- 中间：控制按钮 -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="RunButton" Content="▶️ 运行" Padding="16,8" Margin="4" Click="Run_Click"
+                            Background="#10A37F" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+                    <Button x:Name="StepButton" Content="⏭️ 单步" Padding="16,8" Margin="4" Click="Step_Click"
+                            Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Cursor="Hand"/>
+                    <Button x:Name="StopButton" Content="⏹️ 停止" Padding="16,8" Margin="4" Click="Stop_Click"
+                            Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Cursor="Hand" IsEnabled="False"/>
+                    <Separator Width="1" Margin="8,4" Background="#E0E0E0"/>
+                    <Button x:Name="PickerButton" Content="🎯 拾取选择器" Padding="16,8" Margin="4" Click="Picker_Click"
+                            Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Cursor="Hand"/>
+                    <Button x:Name="RecordButton" Content="⏺️ 录制" Padding="16,8" Margin="4" Click="Record_Click"
+                            Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Cursor="Hand"/>
+                </StackPanel>
+
+                <!-- 右侧：关闭按钮 -->
+                <Button Grid.Column="2" Content="✕ 关闭" Padding="16,8" Click="Close_Click"
+                        Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Cursor="Hand"/>
+            </Grid>
+        </Border>
+
+        <!-- 主内容区：三栏布局 -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="350" MinWidth="250"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*" MinWidth="400"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="350" MinWidth="250"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 左栏：YAML 编辑器 -->
+            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 标题 -->
+                    <Border Grid.Row="0" Background="#F8F9FA" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <TextBlock Text="📝 DSL 脚本" FontSize="14" FontWeight="SemiBold"/>
+                    </Border>
+
+                    <!-- 编辑器 -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="12">
+                        <TextBox x:Name="YamlEditor"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 FontFamily="Consolas"
+                                 FontSize="12"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 Text="# 在此编辑 DSL 脚本或点击右侧 AI 助手生成"/>
+                    </ScrollViewer>
+
+                    <!-- 底部状态 -->
+                    <Border Grid.Row="2" Background="#F8F9FA" Padding="12,8" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+                        <TextBlock x:Name="YamlStatus" Text="就绪" FontSize="11" Foreground="#666"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- 分隔符 1 -->
+            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" Background="Transparent" Cursor="SizeWE"/>
+
+            <!-- 中栏：浏览器 -->
+            <Border Grid.Column="2" Background="White">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 标题 + 地址栏 -->
+                    <Border Grid.Row="0" Background="#F8F9FA" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="🌐 浏览器" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <TextBox x:Name="UrlBox" Grid.Column="1" Text="about:blank" 
+                                     VerticalAlignment="Center" Padding="8,6" FontSize="12"
+                                     BorderBrush="#E0E0E0" BorderThickness="1" Background="White"/>
+                            <Button Grid.Column="2" Content="🔄" Padding="8,6" Margin="8,0,0,0" Click="Refresh_Click"
+                                    Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Cursor="Hand"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 浏览器容器 -->
+                    <Border Grid.Row="1" Background="White">
+                        <Grid x:Name="BrowserContainer">
+                            <!-- WebView2 将在代码中动态添加 -->
+                            <TextBlock Text="浏览器初始化中..." 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center"
+                                       FontSize="14" 
+                                       Foreground="#999"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 底部状态 -->
+                    <Border Grid.Row="2" Background="#F8F9FA" Padding="12,8" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="BrowserStatus" Grid.Column="0" Text="未连接" FontSize="11" Foreground="#666"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <TextBlock x:Name="ExecutionTime" Text="执行时间: 0.0s" FontSize="11" Foreground="#666" Margin="0,0,16,0"/>
+                                <TextBlock x:Name="StepCounter" Text="步骤: 0/0" FontSize="11" Foreground="#666"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- 分隔符 2 -->
+            <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Center" Background="Transparent" Cursor="SizeWE"/>
+
+            <!-- 右栏：标签页（日志 + AI 助手） -->
+            <Border Grid.Column="4" Background="White" BorderBrush="#E0E0E0" BorderThickness="1,0,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 标签页头部 -->
+                    <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- 标签按钮 -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="12,8">
+                                <Button x:Name="LogTabButton" Content="📋 执行日志" Padding="12,6" Margin="0,0,4,0" Click="LogTab_Click"
+                                        Background="#10A37F" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" FontSize="12"/>
+                                <Button x:Name="AiTabButton" Content="🤖 AI 助手" Padding="12,6" Click="AiTab_Click"
+                                        Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Cursor="Hand" FontSize="12"/>
+                            </StackPanel>
+
+                            <!-- 工具栏（日志标签时显示） -->
+                            <StackPanel x:Name="LogToolbar" Grid.Column="1" Orientation="Horizontal" Margin="0,8,12,8">
+                                <Button x:Name="CopyLogButton" Content="📄 复制" Padding="8,4" Margin="0,0,8,0" Click="CopyLog_Click"
+                                        Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Cursor="Hand" FontSize="11"/>
+                                <Button x:Name="ClearLogButton" Content="🗑️ 清空" Padding="8,4" Click="ClearLog_Click"
+                                        Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Cursor="Hand" FontSize="11"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- 标签页内容 -->
+                    <Grid Grid.Row="1">
+                        <!-- 日志面板 -->
+                        <Grid x:Name="LogPanel" Visibility="Visible">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 日志显示区 -->
+                            <Border Grid.Row="0" Background="#1E1E1E" Padding="12">
+                                <ScrollViewer x:Name="LogScroll" VerticalScrollBarVisibility="Auto">
+                                    <TextBox x:Name="LogTextBox"
+                                             TextWrapping="Wrap"
+                                             IsReadOnly="True"
+                                             FontFamily="Consolas"
+                                             FontSize="11"
+                                             Foreground="#D4D4D4"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             VerticalScrollBarVisibility="Disabled"
+                                             Text="[系统] 等待执行..."/>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- 底部统计 -->
+                            <Border Grid.Row="1" Background="#F8F9FA" Padding="12,8" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="LogStats" Grid.Column="0" Text="总计: 0 条" FontSize="11" Foreground="#666"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBlock Text="✓ " FontSize="11" Foreground="#10A37F" Margin="0,0,4,0"/>
+                                        <TextBlock x:Name="LogSuccessCount" Text="0" FontSize="11" Foreground="#10A37F" Margin="0,0,12,0"/>
+                                        <TextBlock Text="✗ " FontSize="11" Foreground="#EF4444" Margin="0,0,4,0"/>
+                                        <TextBlock x:Name="LogErrorCount" Text="0" FontSize="11" Foreground="#EF4444"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- AI 助手面板 -->
+                        <Grid x:Name="AiPanel" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 对话区 -->
+                            <Border Grid.Row="0" Background="#FAFAFA">
+                                <ScrollViewer x:Name="ChatScroll" VerticalScrollBarVisibility="Auto" Padding="16">
+                                    <StackPanel x:Name="ChatPanel">
+                                        <!-- 欢迎消息 -->
+                                        <Border Background="#F0F9FF" BorderBrush="#0EA5E9" BorderThickness="2" 
+                                                CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                                            <StackPanel>
+                                                <TextBlock FontSize="14" FontWeight="Bold" Foreground="#0EA5E9" Margin="0,0,0,8">
+                                                    <Run Text="👋 你好！我是 AI 脚本助手"/>
+                                                </TextBlock>
+                                                <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="#334155" LineHeight="20">
+                                                    <Run Text="我可以帮你："/><LineBreak/>
+                                                    <Run Text="✨ 生成和优化 DSL 脚本"/><LineBreak/>
+                                                    <Run Text="🔍 诊断和修复执行错误"/><LineBreak/>
+                                                    <Run Text="🎯 推荐更好的选择器"/><LineBreak/>
+                                                    <Run Text="💡 解答使用问题"/><LineBreak/>
+                                                    <LineBreak/>
+                                                    <Run Text="在下方输入你的需求，让我们开始吧！" FontStyle="Italic" Foreground="#64748B"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- 输入区 -->
+                            <Border Grid.Row="1" Background="White" Padding="16" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- 输入框 -->
+                                    <Border Grid.Row="0" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Background="White">
+                                        <TextBox x:Name="AiInputBox"
+                                                 TextWrapping="Wrap"
+                                                 AcceptsReturn="True"
+                                                 MaxHeight="120"
+                                                 Padding="12"
+                                                 FontSize="13"
+                                                 BorderThickness="0"
+                                                 VerticalScrollBarVisibility="Auto"
+                                                 Text="描述你想要实现的任务，或粘贴错误信息..."/>
+                                    </Border>
+
+                                    <!-- 按钮区 -->
+                                    <Grid Grid.Row="1" Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- 左侧：提示和勾选框 -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <CheckBox x:Name="AttachPageContextCheckBox" 
+                                                      Content="📄 附带页面上下文" 
+                                                      FontSize="12" 
+                                                      Foreground="#475569"
+                                                      VerticalAlignment="Center"
+                                                      Margin="0,0,16,0"/>
+                                            <TextBlock Text="💡 可粘贴错误日志或勾选附带页面内容" 
+                                                       FontSize="11" 
+                                                       Foreground="#94A3B8" 
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        
+                                        <!-- 右侧：按钮 -->
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <Button Content="🗑️ 清空对话" Padding="12,8" Margin="0,0,8,0" Click="ClearChat_Click"
+                                                    Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Cursor="Hand" FontSize="12"/>
+                                            <Button Content="📤 发送" Padding="16,8" Click="SendAi_Click"
+                                                    Background="#10A37F" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" FontSize="12"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

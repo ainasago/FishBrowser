@@ -1,0 +1,36 @@
+<Window x:Class="FishBrowser.WPF.Views.AddPoolDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="新建代理池" Height="200" Width="360" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+  <DockPanel Margin="16">
+    <StackPanel>
+      <TextBlock Text="池名称" Margin="0,0,0,6"/>
+      <TextBox x:Name="NameBox" Height="26"/>
+
+      <TextBlock Text="策略" Margin="0,12,0,6"/>
+      <ComboBox x:Name="StrategyCombo" Height="26" SelectedIndex="0" SelectionChanged="StrategyCombo_SelectionChanged">
+        <ComboBoxItem Tag="random">随机</ComboBoxItem>
+        <ComboBoxItem Tag="health">健康优先</ComboBoxItem>
+        <ComboBoxItem Tag="least-used">最少使用</ComboBoxItem>
+        <ComboBoxItem Tag="sticky">粘性</ComboBoxItem>
+      </ComboBox>
+
+      <!-- 粘性策略附加配置 -->
+      <StackPanel x:Name="StickyPanel" Margin="0,8,0,0" Visibility="Collapsed">
+        <TextBlock Text="粘性作用域" Margin="0,0,0,4"/>
+        <ComboBox x:Name="StickyScopeCombo" Height="26" SelectedIndex="0">
+          <ComboBoxItem Tag="session">按会话</ComboBoxItem>
+          <ComboBoxItem Tag="task">按任务</ComboBoxItem>
+          <ComboBoxItem Tag="domain">按域名</ComboBoxItem>
+        </ComboBox>
+        <TextBlock Text="TTL (分钟)" Margin="0,8,0,4"/>
+        <TextBox x:Name="StickyTtlMinutesBox" Height="26" Text="10"/>
+      </StackPanel>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,12,0,0">
+      <Button Content="确定" Width="80" Margin="8,0,0,0" IsDefault="True" Click="Ok_Click"/>
+      <Button Content="取消" Width="80" Margin="8,0,0,0" IsCancel="True"/>
+    </StackPanel>
+  </DockPanel>
+</Window>

@@ -1,0 +1,352 @@
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "分组管理";
+}
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- 操作按钮 -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <button type="button" class="btn btn-primary" onclick="showCreateModal()">
+                    <i class="fas fa-plus"></i> 新建分组
+                </button>
+                <button type="button" class="btn btn-secondary ml-2" onclick="refreshGroups()">
+                    <i class="fas fa-sync"></i> 刷新
+                </button>
+            </div>
+        </div>
+
+        <!-- 分组列表 -->
+        <div class="row" id="groupsContainer">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📁 浏览器分组</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="groupsGrid" class="row">
+                            <!-- 分组卡片将在这里显示 -->
+                        </div>
+                        <div id="loadingSpinner" class="text-center" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> 加载中...
+                        </div>
+                        <div id="emptyMessage" class="text-center text-muted" style="display: none;">
+                            <i class="fas fa-folder-open fa-3x mb-3"></i>
+                            <p>暂无分组，点击"新建分组"创建第一个分组</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 创建/编辑分组模态框 -->
+<div class="modal fade" id="groupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle">新建分组</h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="groupForm">
+                    <input type="hidden" id="groupId" value="">
+                    
+                    <div class="form-group">
+                        <label for="groupName">分组名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="groupName" placeholder="输入分组名称" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="groupDescription">描述</label>
+                        <textarea class="form-control" id="groupDescription" rows="3" placeholder="输入分组描述（可选）"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="groupIcon">图标</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    <i id="iconPreview" class="fas fa-folder"></i>
+                                </span>
+                            </div>
+                            <input type="text" class="form-control" id="groupIcon" value="fas fa-folder" placeholder="FontAwesome 图标类名">
+                        </div>
+                        <small class="form-text text-muted">
+                            常用图标：
+                            <span class="badge badge-light cursor-pointer" onclick="setIcon('fas fa-folder')"><i class="fas fa-folder"></i> folder</span>
+                            <span class="badge badge-light cursor-pointer" onclick="setIcon('fas fa-users')"><i class="fas fa-users"></i> users</span>
+                            <span class="badge badge-light cursor-pointer" onclick="setIcon('fas fa-globe')"><i class="fas fa-globe"></i> globe</span>
+                            <span class="badge badge-light cursor-pointer" onclick="setIcon('fas fa-desktop')"><i class="fas fa-desktop"></i> desktop</span>
+                            <span class="badge badge-light cursor-pointer" onclick="setIcon('fas fa-mobile')"><i class="fas fa-mobile"></i> mobile</span>
+                            <span class="badge badge-light cursor-pointer" onclick="setIcon('fas fa-laptop')"><i class="fas fa-laptop"></i> laptop</span>
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveGroup()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        let allGroups = [];
+
+        $(document).ready(function() {
+            loadGroups();
+
+            // 图标输入框变化时更新预览
+            $('#groupIcon').on('input', function() {
+                updateIconPreview();
+            });
+        });
+
+        // 加载分组列表
+        function loadGroups() {
+            $('#loadingSpinner').show();
+            $('#emptyMessage').hide();
+            $('#groupsGrid').empty();
+
+            $.ajax({
+                url: '@Url.Action("GetGroups")',
+                method: 'GET',
+                success: function(response) {
+                    $('#loadingSpinner').hide();
+                    
+                    if (response.success && response.data) {
+                        allGroups = response.data;
+                        displayGroups(allGroups);
+                    } else {
+                        showError('加载分组失败: ' + (response.error || '未知错误'));
+                        $('#emptyMessage').show();
+                    }
+                },
+                error: function(xhr) {
+                    $('#loadingSpinner').hide();
+                    if (xhr.status === 401) {
+                        window.location.href = '@Url.Action("Login", "Auth")';
+                    } else {
+                        showError('加载分组失败');
+                        $('#emptyMessage').show();
+                    }
+                }
+            });
+        }
+
+        // 显示分组
+        function displayGroups(groups) {
+            if (!groups || groups.length === 0) {
+                $('#emptyMessage').show();
+                return;
+            }
+
+            const html = groups.map(group => `
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">
+                                    <i class="${group.icon || 'fas fa-folder'}"></i>
+                                    ${escapeHtml(group.name)}
+                                </h5>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="#" onclick="editGroup(${group.id})">
+                                            <i class="fas fa-edit"></i> 编辑
+                                        </a>
+                                        <a class="dropdown-item text-danger" href="#" onclick="deleteGroup(${group.id}, '${escapeHtml(group.name)}')">
+                                            <i class="fas fa-trash"></i> 删除
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="card-text text-muted small">${escapeHtml(group.description || '暂无描述')}</p>
+                            <div class="mt-auto">
+                                <span class="badge badge-info">
+                                    <i class="fas fa-browser"></i> ${group.browserCount || 0} 个浏览器
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            $('#groupsGrid').html(html);
+        }
+
+        // 显示创建模态框
+        function showCreateModal() {
+            $('#modalTitle').text('新建分组');
+            $('#groupId').val('');
+            $('#groupName').val('');
+            $('#groupDescription').val('');
+            $('#groupIcon').val('fas fa-folder');
+            updateIconPreview();
+            $('#groupModal').modal('show');
+        }
+
+        // 编辑分组
+        function editGroup(id) {
+            const group = allGroups.find(g => g.id === id);
+            if (!group) return;
+
+            $('#modalTitle').text('编辑分组');
+            $('#groupId').val(group.id);
+            $('#groupName').val(group.name);
+            $('#groupDescription').val(group.description || '');
+            $('#groupIcon').val(group.icon || 'fas fa-folder');
+            updateIconPreview();
+            $('#groupModal').modal('show');
+        }
+
+        // 保存分组
+        function saveGroup() {
+            const id = $('#groupId').val();
+            const name = $('#groupName').val().trim();
+            const description = $('#groupDescription').val().trim();
+            const icon = $('#groupIcon').val().trim();
+
+            if (!name) {
+                showError('请输入分组名称');
+                return;
+            }
+
+            const data = {
+                name: name,
+                description: description || null,
+                icon: icon || 'fas fa-folder'
+            };
+
+            const url = id ? '@Url.Action("UpdateGroup")' : '@Url.Action("CreateGroup")';
+            const method = id ? 'PUT' : 'POST';
+            const urlWithId = id ? url + '?id=' + id : url;
+
+            $.ajax({
+                url: urlWithId,
+                method: method,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    if (response.success) {
+                        $('#groupModal').modal('hide');
+                        showSuccess(id ? '分组更新成功' : '分组创建成功');
+                        loadGroups();
+                    } else {
+                        showError(response.error || '操作失败');
+                    }
+                },
+                error: function() {
+                    showError('操作失败，请稍后重试');
+                }
+            });
+        }
+
+        // 删除分组
+        function deleteGroup(id, name) {
+            if (!confirm(`确定要删除分组"${name}"吗？\n注意：只能删除空分组（不包含浏览器的分组）`)) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("DeleteGroup")?id=' + id,
+                method: 'DELETE',
+                success: function(response) {
+                    if (response.success) {
+                        showSuccess('分组删除成功');
+                        loadGroups();
+                    } else {
+                        showError(response.error || '删除失败');
+                    }
+                },
+                error: function() {
+                    showError('删除失败，请稍后重试');
+                }
+            });
+        }
+
+        // 刷新分组列表
+        function refreshGroups() {
+            loadGroups();
+        }
+
+        // 设置图标
+        function setIcon(iconClass) {
+            $('#groupIcon').val(iconClass);
+            updateIconPreview();
+        }
+
+        // 更新图标预览
+        function updateIconPreview() {
+            const iconClass = $('#groupIcon').val() || 'fas fa-folder';
+            $('#iconPreview').attr('class', iconClass);
+        }
+
+        // HTML 转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // 显示成功消息
+        function showSuccess(message) {
+            if (typeof toastr !== 'undefined') {
+                toastr.success(message);
+            } else {
+                alert('成功: ' + message);
+            }
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            if (typeof toastr !== 'undefined') {
+                toastr.error(message);
+            } else {
+                alert('错误: ' + message);
+            }
+        }
+    </script>
+
+    <style>
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        
+        .badge.cursor-pointer:hover {
+            background-color: #007bff !important;
+            color: white !important;
+        }
+        
+        .card {
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+}

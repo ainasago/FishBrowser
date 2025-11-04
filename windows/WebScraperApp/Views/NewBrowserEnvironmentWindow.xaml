@@ -1,0 +1,394 @@
+<Window x:Class="FishBrowser.WPF.Views.NewBrowserEnvironmentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="新建指纹浏览器" Height="680" Width="980"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize">
+  <Window.Resources>
+    <!-- ToggleButton 样式：选中时蓝色，未选中时灰色 -->
+    <Style x:Key="SelectionToggleButtonStyle" TargetType="ToggleButton">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="Foreground" Value="#999"/>
+      <Setter Property="BorderBrush" Value="#CCC"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="8,4"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ToggleButton">
+            <Border Background="{TemplateBinding Background}" 
+                    BorderBrush="{TemplateBinding BorderBrush}" 
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="4" Padding="{TemplateBinding Padding}">
+              <!-- 使用 TextBlock 以支持 Foreground 绑定 -->
+              <TextBlock Text="{TemplateBinding Content}"
+                         Foreground="{TemplateBinding Foreground}"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Style.Triggers>
+        <Trigger Property="IsChecked" Value="True">
+          <Setter Property="Background" Value="White"/>
+          <Setter Property="Foreground" Value="#0066CC"/>
+          <Setter Property="BorderBrush" Value="#0066CC"/>
+          <Setter Property="BorderThickness" Value="2"/>
+        </Trigger>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter Property="Background" Value="#F5F5F5"/>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+  </Window.Resources>
+  <Grid Margin="10">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="2*"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <!-- 左侧表单 -->
+    <ScrollViewer Grid.Row="0" Grid.Column="0" VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="0,0,12,0">
+        <TextBlock Text="基础信息" FontWeight="Bold" Margin="0,0,0,6"/>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="140"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="名称" VerticalAlignment="Center"/>
+          <TextBox x:Name="NameBox" Grid.Column="1" Height="26"/>
+        </Grid>
+
+        <Separator Margin="0,8,0,8"/>
+        <TextBlock Text="浏览器与操作系统" FontWeight="Bold" Margin="0,0,0,6"/>
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="140"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="浏览器" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+            <ToggleButton x:Name="EngineChromeBtn" Content="Chrome" Width="90" Height="26" Tag="chrome" Style="{StaticResource SelectionToggleButtonStyle}" Click="Engine_Click"/>
+            <ToggleButton x:Name="EngineFirefoxBtn" Content="Firefox" Width="90" Height="26" Tag="firefox" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Engine_Click"/>
+            <ToggleButton x:Name="EngineWebKitBtn" Content="WebKit" Width="90" Height="26" Tag="webkit" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Engine_Click"/>
+            <ToggleButton x:Name="EngineEdgeBtn" Content="Edge" Width="90" Height="26" Tag="edge" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Engine_Click"/>
+            <ToggleButton x:Name="EngineBraveBtn" Content="Brave" Width="90" Height="26" Tag="brave" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Engine_Click"/>
+            <ComboBox x:Name="EngineCombo" Height="26" SelectionChanged="Generic_SelectionChanged" Visibility="Collapsed">
+              <ComboBoxItem Content="Chrome" Tag="chrome" IsSelected="True"/>
+              <ComboBoxItem Content="Firefox" Tag="firefox"/>
+              <ComboBoxItem Content="WebKit" Tag="webkit"/>
+              <ComboBoxItem Content="Edge (Chromium)" Tag="edge"/>
+              <ComboBoxItem Content="Brave (Chromium)" Tag="brave"/>
+            </ComboBox>
+          </StackPanel>
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="引擎模式" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+            <ToggleButton x:Name="EngineModePlaywrightBtn" Content="🎭 Playwright" Width="140" Height="26" Tag="playwright" Style="{StaticResource SelectionToggleButtonStyle}" Click="EngineMode_Click" ToolTip="标准 Playwright（快速、稳定）"/>
+            <ToggleButton x:Name="EngineModeUndetectedBtn" Content="🛡️ UndetectedChrome" Width="160" Height="26" Tag="undetected_chrome" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="EngineMode_Click" ToolTip="反检测模式（绕过 Cloudflare，仅支持 Chrome）"/>
+          </StackPanel>
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="操作系统" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+            <ToggleButton x:Name="OsWindowsBtn" Content="Windows" Width="90" Height="26" Tag="windows" Style="{StaticResource SelectionToggleButtonStyle}" Click="Os_Click"/>
+            <ToggleButton x:Name="OsAndroidBtn" Content="Android" Width="90" Height="26" Tag="android" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Os_Click"/>
+            <ToggleButton x:Name="OsiOSBtn" Content="iOS" Width="70" Height="26" Tag="ios" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Os_Click"/>
+            <ToggleButton x:Name="OsMacBtn" Content="macOS" Width="90" Height="26" Tag="macos" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Os_Click"/>
+            <ToggleButton x:Name="OsLinuxBtn" Content="Linux" Width="90" Height="26" Tag="linux" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Os_Click"/>
+            <ComboBox x:Name="OsCombo" Height="26" SelectionChanged="Generic_SelectionChanged" Visibility="Collapsed">
+              <ComboBoxItem Content="Windows" Tag="windows" IsSelected="True"/>
+              <ComboBoxItem Content="Android" Tag="android"/>
+              <ComboBoxItem Content="iOS" Tag="ios"/>
+              <ComboBoxItem Content="macOS" Tag="macos"/>
+              <ComboBoxItem Content="Linux" Tag="linux"/>
+            </ComboBox>
+          </StackPanel>
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="User Agent" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+            <ToggleButton x:Name="UaRandomBtn" Content="随机" Width="70" Height="26" Tag="random" Style="{StaticResource SelectionToggleButtonStyle}" Click="UaMode_Click"/>
+            <ToggleButton x:Name="UaMatchBtn" Content="匹配" Width="70" Height="26" Tag="match" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="UaMode_Click"/>
+            <ToggleButton x:Name="UaCustomBtn" Content="自定义" Width="70" Height="26" Tag="custom" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="UaMode_Click"/>
+            <ToggleButton x:Name="UaProfileBtn" Content="使用配置UA" Width="100" Height="26" Tag="profile" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="UaMode_Click"/>
+            <ComboBox x:Name="UaModeCombo" Width="120" Height="26" VerticalAlignment="Center" SelectionChanged="UaModeCombo_SelectionChanged" Visibility="Collapsed">
+              <ComboBoxItem Content="随机" Tag="random" IsSelected="True"/>
+              <ComboBoxItem Content="匹配" Tag="match"/>
+              <ComboBoxItem Content="自定义" Tag="custom"/>
+              <ComboBoxItem Content="使用配置UA" Tag="profile"/>
+            </ComboBox>
+            <TextBox x:Name="CustomUaBox" Margin="8,0,0,0" Height="26" Width="420" Visibility="Collapsed" TextChanged="Generic_TextChanged"/>
+          </StackPanel>
+        </Grid>
+
+        <Separator Margin="0,8,0,8"/>
+        <TextBlock Text="代理与区域偏好" FontWeight="Bold" Margin="0,0,0,6"/>
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="140"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="代理方式" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+            <ToggleButton x:Name="ProxyNoneBtn" Content="无" Width="70" Height="26" Tag="none" Style="{StaticResource SelectionToggleButtonStyle}" Click="Proxy_Click"/>
+            <ToggleButton x:Name="ProxyRefBtn" Content="引用" Width="70" Height="26" Tag="reference" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Proxy_Click"/>
+            <ToggleButton x:Name="ProxyApiBtn" Content="API" Width="70" Height="26" Tag="api" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Proxy_Click"/>
+            <ComboBox x:Name="ProxyModeCombo" Height="26" SelectionChanged="Generic_SelectionChanged" Visibility="Collapsed">
+              <ComboBoxItem Content="无" Tag="none" IsSelected="True"/>
+              <ComboBoxItem Content="引用已有代理" Tag="reference"/>
+              <ComboBoxItem Content="自定义API提取" Tag="api"/>
+            </ComboBox>
+          </StackPanel>
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="选择代理" VerticalAlignment="Top" Margin="0,6,0,0"/>
+          <Grid Grid.Row="1" Grid.Column="1">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <!-- 第一行：模式切换与操作按钮，留出更大间距 -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+              <ToggleButton x:Name="ProxyTargetServerBtn" Content="单个" Width="70" Height="28" Tag="server" Style="{StaticResource SelectionToggleButtonStyle}" Click="ProxyTarget_Click"/>
+              <ToggleButton x:Name="ProxyTargetPoolBtn" Content="池" Width="70" Height="28" Tag="pool" Margin="10,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="ProxyTarget_Click"/>
+              <Button x:Name="AddPoolInlineButton" Content="新建池" Width="84" Height="28" Margin="12,0,0,0" Click="AddPoolInline_Click" Visibility="Collapsed"/>
+              <Button x:Name="AddProxyInlineButton" Content="新建" Width="84" Height="28" Margin="8,0,0,0" Click="AddProxyInline_Click"/>
+              <Button x:Name="TestProxyButton" Content="测试" Width="84" Height="28" Margin="8,0,0,0" Click="TestProxy_Click"/>
+            </StackPanel>
+            <!-- 第二行：下拉，占满整行宽度，避免遮挡按钮 -->
+            <Grid Grid.Row="1" Margin="0,8,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <ComboBox x:Name="ExistingProxyCombo" Grid.Column="0"
+                        MinWidth="420" Height="28" Padding="6,0,6,0"
+                        MaxDropDownHeight="320" DisplayMemberPath="Label" SelectedValuePath="Id"
+                        DropDownOpened="ExistingProxyCombo_DropDownOpened" />
+              <ComboBox x:Name="ExistingPoolCombo" Grid.Column="0"
+                        MinWidth="420" Height="28" Padding="6,0,6,0"
+                        MaxDropDownHeight="320" DisplayMemberPath="Name" SelectedValuePath="Id"
+                        Visibility="Collapsed" DropDownOpened="ExistingPoolCombo_DropDownOpened" />
+            </Grid>
+          </Grid>
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="区域 (含 IP)" VerticalAlignment="Center"/>
+          <WrapPanel Grid.Row="2" Grid.Column="1" ItemWidth="60" ItemHeight="26">
+            <ToggleButton x:Name="RegionIpBtn" Content="IP" Width="60" Height="26" Tag="IP" Style="{StaticResource SelectionToggleButtonStyle}" Click="Region_Click"/>
+            <ToggleButton x:Name="RegionCnBtn" Content="CN" Width="60" Height="26" Tag="CN" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Region_Click"/>
+            <ToggleButton x:Name="RegionUsBtn" Content="US" Width="60" Height="26" Tag="US" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Region_Click"/>
+            <ToggleButton x:Name="RegionJpBtn" Content="JP" Width="60" Height="26" Tag="JP" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Region_Click"/>
+            <ToggleButton x:Name="RegionDeBtn" Content="DE" Width="60" Height="26" Tag="DE" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Region_Click"/>
+            <ToggleButton x:Name="RegionUkBtn" Content="UK" Width="60" Height="26" Tag="UK" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Region_Click"/>
+            <ToggleButton x:Name="RegionInBtn" Content="IN" Width="60" Height="26" Tag="IN" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Region_Click"/>
+            <ToggleButton x:Name="RegionBrBtn" Content="BR" Width="60" Height="26" Tag="BR" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Region_Click"/>
+            <TextBox x:Name="RegionBox" Height="26" Width="120" Margin="8,0,0,0" ToolTip="用于智能匹配语言/时区，留空默认 CN；选择 IP 时将按IP确定区域" TextChanged="Generic_TextChanged" Visibility="Collapsed"/>
+          </WrapPanel>
+          <TextBlock Grid.Row="3" Grid.Column="0" Text="设备类/厂商 (可选)" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+            <TextBox x:Name="DeviceClassBox" Width="140" Height="26" Margin="0,0,8,0" TextChanged="Generic_TextChanged"/>
+            <TextBox x:Name="VendorBox" Width="140" Height="26" TextChanged="Generic_TextChanged"/>
+          </StackPanel>
+        </Grid>
+
+        <Separator Margin="0,8,0,8"/>
+        <TextBlock Text="指纹配置" FontWeight="Bold" Margin="0,0,0,6"/>
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="140"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="选择方式" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+            <RadioButton x:Name="ProfileModeExisting" Content="选择已有" IsChecked="True" VerticalAlignment="Center" Margin="0,0,20,0" Checked="ProfileMode_Changed"/>
+            <RadioButton x:Name="ProfileModePreset" Content="从预设生成" VerticalAlignment="Center" Checked="ProfileMode_Changed"/>
+          </StackPanel>
+          
+          <!-- 选择已有 Profile -->
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="指纹配置" VerticalAlignment="Center" x:Name="ExistingProfileLabel"/>
+          <ComboBox x:Name="ExistingProfileCombo" Grid.Row="1" Grid.Column="1" Height="26" DisplayMemberPath="Name" SelectionChanged="ExistingProfile_SelectionChanged"/>
+          
+          <!-- 从预设生成 -->
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="选择预设" VerticalAlignment="Center" x:Name="PresetLabel" Visibility="Collapsed"/>
+          <ComboBox x:Name="PresetCombo" Grid.Row="1" Grid.Column="1" Height="26" DisplayMemberPath="Name" Visibility="Collapsed" SelectionChanged="PresetCombo_SelectionChanged"/>
+          
+          <!-- Profile 信息展示 -->
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="Profile 信息" VerticalAlignment="Top"/>
+          <TextBlock x:Name="ProfileInfoText" Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Foreground="#666" FontSize="11" Margin="0,2,0,0"/>
+        </Grid>
+
+        <Separator Margin="0,8,0,8"/>
+        <TextBlock Text="高级设置 (常用)" FontWeight="Bold" Margin="0,0,0,6"/>
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="140"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="分辨率" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+            <ToggleButton x:Name="ResolutionRealBtn" Content="真实" Width="70" Height="26" Tag="real" Style="{StaticResource SelectionToggleButtonStyle}" Click="Resolution_Click"/>
+            <ToggleButton x:Name="ResolutionCustomBtn" Content="自定义" Width="70" Height="26" Tag="custom" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Resolution_Click"/>
+            <ComboBox x:Name="ResolutionCombo" Height="26" SelectionChanged="Generic_SelectionChanged" Visibility="Collapsed">
+              <ComboBoxItem Content="真实" Tag="real" IsSelected="True"/>
+              <ComboBoxItem Content="自定义" Tag="custom"/>
+            </ComboBox>
+            <TextBlock Text="宽" Margin="16,0,4,0" VerticalAlignment="Center" Visibility="Collapsed" x:Name="ResolutionWidthLabel"/>
+            <TextBox x:Name="ResolutionWidthBox" Width="80" Height="26" Margin="0,0,8,0" Visibility="Collapsed" TextChanged="Generic_TextChanged" ToolTip="分辨率宽度"/>
+            <TextBlock Text="高" Margin="0,0,4,0" VerticalAlignment="Center" Visibility="Collapsed" x:Name="ResolutionHeightLabel"/>
+            <TextBox x:Name="ResolutionHeightBox" Width="80" Height="26" Visibility="Collapsed" TextChanged="Generic_TextChanged" ToolTip="分辨率高度"/>
+          </StackPanel>
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="WebRTC" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+            <ToggleButton x:Name="WebRtcHideBtn" Content="隐藏" Width="70" Height="26" Tag="hide" Style="{StaticResource SelectionToggleButtonStyle}" Click="WebRtc_Click"/>
+            <ToggleButton x:Name="WebRtcDisableBtn" Content="禁用" Width="70" Height="26" Tag="disable" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="WebRtc_Click"/>
+            <ToggleButton x:Name="WebRtcRealBtn" Content="真实" Width="70" Height="26" Tag="real" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="WebRtc_Click"/>
+            <ComboBox x:Name="WebRtcCombo" Height="26" SelectionChanged="Generic_SelectionChanged" Visibility="Collapsed">
+              <ComboBoxItem Content="隐藏" Tag="hide" IsSelected="True"/>
+              <ComboBoxItem Content="禁用" Tag="disable"/>
+              <ComboBoxItem Content="真实" Tag="real"/>
+            </ComboBox>
+          </StackPanel>
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="Canvas" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+            <ToggleButton x:Name="CanvasNoiseBtn" Content="噪音" Width="70" Height="26" Tag="noise" Style="{StaticResource SelectionToggleButtonStyle}" Click="Canvas_Click"/>
+            <ToggleButton x:Name="CanvasRealBtn" Content="真实" Width="70" Height="26" Tag="real" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Canvas_Click"/>
+            <ComboBox x:Name="CanvasCombo" Height="26" SelectionChanged="Generic_SelectionChanged" Visibility="Collapsed">
+              <ComboBoxItem Content="噪音" Tag="noise" IsSelected="True"/>
+              <ComboBoxItem Content="真实" Tag="real"/>
+            </ComboBox>
+          </StackPanel>
+          <TextBlock Grid.Row="3" Grid.Column="0" Text="Webdriver" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+            <ToggleButton x:Name="WebdriverUndefinedBtn" Content="undefined" Width="90" Height="26" Tag="undefined" Style="{StaticResource SelectionToggleButtonStyle}" Click="Webdriver_Click" ToolTip="最安全：完全移除 webdriver 属性"/>
+            <ToggleButton x:Name="WebdriverTrueBtn" Content="true" Width="70" Height="26" Tag="true" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Webdriver_Click" ToolTip="与真实 Chrome 一致"/>
+            <ToggleButton x:Name="WebdriverFalseBtn" Content="false" Width="70" Height="26" Tag="false" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="Webdriver_Click" ToolTip="可能被检测"/>
+            <ComboBox x:Name="WebdriverCombo" Height="26" SelectionChanged="Generic_SelectionChanged" Visibility="Collapsed">
+              <ComboBoxItem Content="undefined" Tag="undefined" IsSelected="True"/>
+              <ComboBoxItem Content="true" Tag="true"/>
+              <ComboBoxItem Content="false" Tag="false"/>
+            </ComboBox>
+          </StackPanel>
+          <TextBlock Grid.Row="4" Grid.Column="0" Text="硬件并发/内存" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
+            <TextBox x:Name="HwBox" Width="80" Height="26" Text="10" Margin="0,0,8,0" TextChanged="Generic_TextChanged"/>
+            <TextBox x:Name="MemBox" Width="80" Height="26" Text="8" TextChanged="Generic_TextChanged"/>
+          </StackPanel>
+
+          <TextBlock Grid.Row="5" Grid.Column="0" Text="字体列表" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal">
+            <ToggleButton x:Name="FontsRealBtn" Content="真实" Width="70" Height="26" Tag="real" Style="{StaticResource SelectionToggleButtonStyle}" Click="FontsMode_Click"/>
+            <ToggleButton x:Name="FontsCustomBtn" Content="自定义" Width="70" Height="26" Tag="custom" Margin="8,0,0,0" Style="{StaticResource SelectionToggleButtonStyle}" Click="FontsMode_Click"/>
+            <ComboBox x:Name="FontsModeCombo" Width="120" Height="26" VerticalAlignment="Center" SelectionChanged="FontsModeCombo_SelectionChanged" Visibility="Collapsed">
+              <ComboBoxItem Content="真实" Tag="real" IsSelected="True"/>
+              <ComboBoxItem Content="自定义" Tag="custom"/>
+            </ComboBox>
+            <Button x:Name="EditFontsButton" Content="编辑" Width="70" Height="26" Margin="8,0,0,0" Click="EditFonts_Click"/>
+            <Button x:Name="ShuffleFontsButton" Content="换一换" Width="80" Height="26" Margin="8,0,0,0" Click="ShuffleFonts_Click"/>
+          </StackPanel>
+          <TextBlock x:Name="FontsSummaryText" Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="#666" FontSize="11" Margin="0,2,0,8"/>
+
+          <Separator Grid.Row="6" Grid.ColumnSpan="2" Margin="0,0,0,8"/>
+          <TextBlock Grid.Row="7" Grid.Column="0" Text="WebGL 图像" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
+            <ToggleButton x:Name="WebGLImageNoiseBtn" Content="噪音" Width="70" Height="26" Tag="noise" Click="WebGLImageMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+            <ToggleButton x:Name="WebGLImageRealBtn" Content="真实" Width="70" Height="26" Tag="real" Margin="8,0,0,0" Click="WebGLImageMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+          </StackPanel>
+
+          <TextBlock Grid.Row="8" Grid.Column="0" Text="WebGL Info" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
+            <ToggleButton x:Name="WebGLInfoUaBtn" Content="基于UA" Width="70" Height="26" Tag="ua_based" Click="WebGLInfoMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+            <ToggleButton x:Name="WebGLInfoCustomBtn" Content="自定义" Width="70" Height="26" Tag="custom" Margin="8,0,0,0" Click="WebGLInfoMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+            <ToggleButton x:Name="WebGLInfoDisableBtn" Content="关闭硬加速" Width="90" Height="26" Tag="disable_hwaccel" Margin="8,0,0,0" Click="WebGLInfoMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+            <ToggleButton x:Name="WebGLInfoRealBtn" Content="真实" Width="70" Height="26" Tag="real" Margin="8,0,0,0" Click="WebGLInfoMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+          </StackPanel>
+          
+          <TextBlock Grid.Row="9" Grid.Column="0" Text="厂商" VerticalAlignment="Center"/>
+          <TextBox x:Name="WebGLVendorBox" Grid.Row="9" Grid.Column="1" Height="26" Margin="0,0,0,8" TextChanged="Generic_TextChanged" IsReadOnly="True"/>
+          
+          <TextBlock Grid.Row="10" Grid.Column="0" Text="渲染" VerticalAlignment="Center"/>
+          <TextBox x:Name="WebGLRendererBox" Grid.Row="10" Grid.Column="1" Height="26" Margin="0,0,0,8" TextChanged="Generic_TextChanged" IsReadOnly="True"/>
+          
+          <TextBlock Grid.Row="11" Grid.Column="0" Text="操作" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="11" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button Content="编辑" Width="70" Height="26" Click="EditWebGL_Click"/>
+            <Button Content="换一换" Width="80" Height="26" Margin="8,0,0,0" Click="ShuffleWebGL_Click"/>
+          </StackPanel>
+
+          <TextBlock Grid.Row="12" Grid.Column="0" Text="WebGPU" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="12" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
+            <ToggleButton x:Name="WebGpuMatchBtn" Content="基于WebGL匹配" Width="100" Height="26" Tag="match_webgl" Click="WebGPUMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+            <ToggleButton x:Name="WebGpuRealBtn" Content="真实" Width="70" Height="26" Tag="real" Margin="8,0,0,0" Click="WebGPUMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+            <ToggleButton x:Name="WebGpuDisableBtn" Content="禁用" Width="70" Height="26" Tag="disable" Margin="8,0,0,0" Click="WebGPUMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+          </StackPanel>
+
+          <TextBlock Grid.Row="13" Grid.Column="0" Text="AudioContext" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="13" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
+            <ToggleButton x:Name="AudioNoiseBtn" Content="噪音" Width="70" Height="26" Tag="noise" Click="AudioContextMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+            <ToggleButton x:Name="AudioRealBtn" Content="真实" Width="70" Height="26" Tag="real" Margin="8,0,0,0" Click="AudioContextMode_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+          </StackPanel>
+
+          <TextBlock Grid.Row="14" Grid.Column="0" Text="SpeechVoices" VerticalAlignment="Center"/>
+          <StackPanel Grid.Row="14" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,8">
+            <ToggleButton x:Name="SpeechEnabledBtn" Content="开启" Width="70" Height="26" Tag="true" Click="SpeechVoices_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+            <ToggleButton x:Name="SpeechDisabledBtn" Content="关闭" Width="70" Height="26" Tag="false" Margin="8,0,0,0" Click="SpeechVoices_Click" Style="{StaticResource SelectionToggleButtonStyle}"/>
+          </StackPanel>
+        </Grid>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- 右侧预览 -->
+    <GroupBox Grid.Row="0" Grid.Column="1" Header="预览" Margin="8,0,0,0">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBox x:Name="PreviewBox" Grid.Row="0" Margin="6" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True" TextWrapping="Wrap"/>
+        <TextBlock x:Name="StatusText" Grid.Row="1" Margin="6"/>
+      </Grid>
+    </GroupBox>
+
+    <!-- 底部操作 -->
+    <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,8,0,0" LastChildFill="True">
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+        <Button x:Name="RandomizeButton" Content="一键随机" Width="100" Margin="0,0,8,0" Click="Randomize_Click"/>
+        <Button x:Name="AdvancedRandomizeButton" Content="高级随机" Width="100" Margin="0,0,8,0" Click="AdvancedRandomize_Click"/>
+        <Button x:Name="CreateButton" Content="创建环境" Width="110" Margin="8,0,0,0" Click="Create_Click"/>
+        <Button x:Name="LaunchButton" Content="启动浏览器（测试）" Width="140" Margin="8,0,0,0" Click="LaunchBrowser_Click" IsEnabled="False"/>
+        <Button Content="关闭" Width="80" Margin="8,0,0,0" Click="Close_Click"/>
+      </StackPanel>
+      <TextBlock Text="提示：大多数项已智能匹配，必要时可稍后在元配置中微调。" VerticalAlignment="Center"/>
+    </DockPanel>
+  </Grid>
+</Window>

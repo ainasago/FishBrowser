@@ -1,0 +1,138 @@
+<Window x:Class="FishBrowser.WPF.Views.UserAgentBuilderDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="构建 User-Agent" Height="560" Width="560" WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid Margin="12">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="140"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <TextBlock Text="浏览器名称" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+      <ComboBox x:Name="BrowserNameBox" Grid.Row="0" Grid.Column="1" Height="28">
+        <ComboBoxItem Content="Edge"/>
+        <ComboBoxItem Content="Chrome"/>
+        <ComboBoxItem Content="Safari"/>
+        <ComboBoxItem Content="Firefox"/>
+      </ComboBox>
+    
+
+    <TextBlock Text="浏览器版本" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0,8,0,0"/>
+    <TextBox x:Name="BrowserVersionBox" Grid.Row="1" Grid.Column="1" Height="28" Margin="0,8,0,0" Text="141.0.0.0"/>
+
+    <TextBlock Text="浏览器主版本" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="0,8,0,0"/>
+    <TextBox x:Name="BrowserMajorBox" Grid.Row="2" Grid.Column="1" Height="28" Margin="0,8,0,0" Text="141"/>
+
+    <TextBlock Text="浏览器引擎" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="0,8,0,0"/>
+    <ComboBox x:Name="EngineBox" Grid.Row="3" Grid.Column="1" Height="28" Margin="0,8,0,0">
+      <ComboBoxItem Content="Blink"/>
+      <ComboBoxItem Content="WebKit"/>
+      <ComboBoxItem Content="Gecko"/>
+    </ComboBox>
+
+    <TextBlock Text="引擎版本" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="0,8,0,0"/>
+    <TextBox x:Name="EngineVersionBox" Grid.Row="4" Grid.Column="1" Height="28" Margin="0,8,0,0" Text="141.0.0.0"/>
+
+    <GroupBox Header="平台 / 设备 / WebKit" Grid.Row="5" Grid.ColumnSpan="2" Margin="0,12,0,12">
+      <Grid Margin="8">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="140"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Text="操作系统" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+        <ComboBox x:Name="OsBox" Grid.Row="0" Grid.Column="1" Height="28">
+          <ComboBoxItem Content="Windows"/>
+          <ComboBoxItem Content="macOS"/>
+          <ComboBoxItem Content="Linux"/>
+          <ComboBoxItem Content="Android"/>
+          <ComboBoxItem Content="iOS"/>
+        </ComboBox>
+
+        <TextBlock Text="OS 版本" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0,8,0,0"/>
+        <TextBox x:Name="OsVersionBox" Grid.Row="1" Grid.Column="1" Height="28" Margin="0,8,0,0" Text="10"/>
+
+        <TextBlock Text="CPU 架构" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="0,8,0,0"/>
+        <ComboBox x:Name="CpuArchBox" Grid.Row="2" Grid.Column="1" Height="28" Margin="0,8,0,0">
+          <ComboBoxItem Content="x86"/>
+          <ComboBoxItem Content="x86_64"/>
+          <ComboBoxItem Content="amd64"/>
+          <ComboBoxItem Content="arm64"/>
+          <ComboBoxItem Content="armv7l"/>
+          <ComboBoxItem Content="armv8"/>
+          <ComboBoxItem Content="ppc64le"/>
+          <ComboBoxItem Content="s390x"/>
+          <ComboBoxItem Content="mips64"/>
+          <ComboBoxItem Content="riscv64"/>
+          <ComboBoxItem Content="ia32"/>
+        </ComboBox>
+
+        <TextBlock Text="设备型号" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="0,8,0,0"/>
+        <ComboBox x:Name="DeviceModelBox" Grid.Row="3" Grid.Column="1" Height="28" Margin="0,8,0,0">
+          <ComboBoxItem Content="iPhone 15"/>
+          <ComboBoxItem Content="iPhone 14"/>
+          <ComboBoxItem Content="iPad Pro"/>
+          <ComboBoxItem Content="Pixel 7"/>
+          <ComboBoxItem Content="Pixel 6"/>
+          <ComboBoxItem Content="Galaxy S23"/>
+          <ComboBoxItem Content="Mi 13"/>
+          <ComboBoxItem Content="Windows PC"/>
+          <ComboBoxItem Content="MacBook Pro"/>
+          <ComboBoxItem Content="Linux PC"/>
+        </ComboBox>
+
+        <TextBlock Text="AppleWebKit 版本" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="0,8,0,0"/>
+        <TextBox x:Name="AppleWebKitVersionBox" Grid.Row="4" Grid.Column="1" Height="28" Margin="0,8,0,0" Text="537.36"/>
+
+        <TextBlock Text="Safari 版本(仅 Safari)" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Margin="0,8,0,0"/>
+        <TextBox x:Name="SafariVersionBox" Grid.Row="5" Grid.Column="1" Height="28" Margin="0,8,0,0" Text="17.4"/>
+      </Grid>
+    </GroupBox>
+
+    <GroupBox Header="Client Hints (Sec-CH)" Grid.Row="6" Grid.ColumnSpan="2" Margin="0,0,0,12">
+      <Grid Margin="8">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="180"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <CheckBox x:Name="GenerateCHCheck" Grid.Row="0" Grid.ColumnSpan="2" Content="生成 Accept-CH 和 Sec-CH-UA 相关头" IsChecked="True"/>
+        <TextBlock Text="Platform-Version" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0,8,0,0"/>
+        <TextBox x:Name="PlatformVersionBox" Grid.Row="1" Grid.Column="1" Height="28" Margin="0,8,0,0" Text="10"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,8,0,0">
+          <TextBlock Text="移动端?" VerticalAlignment="Center"/>
+          <CheckBox x:Name="IsMobileCheck" Margin="8,0,0,0"/>
+        </StackPanel>
+      </Grid>
+    </GroupBox>
+
+    <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.ColumnSpan="2" HorizontalAlignment="Right">
+      <Button x:Name="OkButton" Content="确定" Width="88" Height="30" Margin="0,0,8,0" Click="Ok_Click"/>
+      <Button Content="取消" Width="88" Height="30" Click="Cancel_Click"/>
+    </StackPanel>
+    </Grid>
+  </ScrollViewer>
+</Window>

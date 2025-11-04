@@ -1,0 +1,178 @@
+<UserControl x:Class="FishBrowser.WPF.Views.BrowserGroupManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             Background="#F5F7FA">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E8EEF5" BorderThickness="0,0,0,1" Padding="24">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="🌐 浏览器分组管理" FontSize="24" FontWeight="Bold" Foreground="#1F2937"/>
+                    <TextBlock Text="创建和管理浏览器分组，为不同场景配置指纹" FontSize="12" Foreground="#6B7280" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,0">
+                    <Button Name="CreateGroupButton" Content="➕ 新建分组" 
+                            Background="#3B82F6" Foreground="White" 
+                            Padding="16,10" FontSize="12" FontWeight="SemiBold"
+                            Click="CreateGroupButton_Click"
+                            Margin="0,0,12,0"/>
+                    <Button Name="RefreshButton" Content="🔄 刷新" 
+                            Background="#F3F4F6" Foreground="#374151" 
+                            Padding="12,10" FontSize="12"
+                            Click="RefreshButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Groups List -->
+            <Border Grid.Column="0" Background="White" CornerRadius="12" BorderBrush="#E5E7EB" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="分组列表" FontSize="14" FontWeight="Bold" Foreground="#1F2937" Margin="16,16,16,8"/>
+                    <Separator Background="#E5E7EB" Margin="0"/>
+                    
+                    <ListBox Name="GroupsListBox" 
+                             Background="Transparent" 
+                             BorderThickness="0"
+                             SelectionChanged="GroupsListBox_SelectionChanged"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="Transparent" Padding="12,8" Margin="4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="20" VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="#1F2937"/>
+                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#9CA3AF" Margin="0,2,0,0"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="2" Text="{Binding Environments.Count, StringFormat='0 个环境'}" 
+                                                   FontSize="11" Foreground="#6B7280" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <!-- Right: Group Details -->
+            <Border Grid.Column="1" Background="White" CornerRadius="12" BorderBrush="#E5E7EB" BorderThickness="1" Margin="16,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Border Padding="24">
+                        <StackPanel Name="DetailsPanel">
+                        <!-- Group Info -->
+                        <TextBlock Text="分组信息" FontSize="16" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,16"/>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="分组名称" FontSize="12" Foreground="#6B7280" Margin="0,0,0,4"/>
+                                <TextBlock Name="GroupNameText" FontSize="14" FontWeight="SemiBold" Foreground="#1F2937"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="创建时间" FontSize="12" Foreground="#6B7280" Margin="0,0,0,4"/>
+                                <TextBlock Name="GroupCreatedText" FontSize="14" Foreground="#1F2937"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="{Binding ElementName=DetailsPanel, Path=DataContext.Description}" 
+                                   FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" Margin="0,0,0,20"/>
+
+                        <!-- Validation Rules -->
+                        <Separator Background="#E5E7EB" Margin="0,0,0,20"/>
+                        <TextBlock Text="校验规则" FontSize="16" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,16"/>
+
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="最小真实性评分" FontSize="12" Foreground="#6B7280" Margin="0,0,0,4"/>
+                                <TextBlock Name="MinRealisticScoreText" FontSize="14" FontWeight="SemiBold" Foreground="#3B82F6"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="最大 Cloudflare 风险评分" FontSize="12" Foreground="#6B7280" Margin="0,0,0,4"/>
+                                <TextBlock Name="MaxCloudflareRiskText" FontSize="14" FontWeight="SemiBold" Foreground="#EF4444"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Environments -->
+                        <Separator Background="#E5E7EB" Margin="0,0,0,20"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <TextBlock Text="浏览器环境" FontSize="16" FontWeight="Bold" Foreground="#1F2937"/>
+                            <TextBlock Name="EnvironmentCountText" FontSize="16" FontWeight="Bold" Foreground="#3B82F6" Margin="8,0,0,0"/>
+                        </StackPanel>
+
+                        <DataGrid Name="EnvironmentsGrid" 
+                                  Background="Transparent" 
+                                  BorderThickness="0"
+                                  RowBackground="Transparent"
+                                  AlternatingRowBackground="Transparent"
+                                  HeadersVisibility="Column"
+                                  Height="200"
+                                  AutoGenerateColumns="False"
+                                  Margin="0,0,0,20">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="环境名称" Binding="{Binding Name}" Width="*"/>
+                                <DataGridTextColumn Header="指纹配置" Binding="{Binding FingerprintProfile.Name}" Width="150"/>
+                                <DataGridTextColumn Header="创建时间" Binding="{Binding CreatedAt, StringFormat='yyyy-MM-dd'}" Width="120"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Action Buttons -->
+                        <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                            <Button Name="EditGroupButton" Content="✏️ 编辑分组" 
+                                    Background="#10B981" Foreground="White" 
+                                    Padding="16,10" FontSize="12" FontWeight="SemiBold" Margin="0,0,12,0"
+                                    Click="EditGroupButton_Click"/>
+                            <Button Name="DeleteGroupButton" Content="🗑️ 删除分组" 
+                                    Background="#EF4444" Foreground="White" 
+                                    Padding="16,10" FontSize="12" FontWeight="SemiBold" Margin="0,0,12,0"
+                                    Click="DeleteGroupButton_Click"/>
+                            <Button Name="ValidateButton" Content="✓ 校验指纹" 
+                                    Background="#8B5CF6" Foreground="White" 
+                                    Padding="16,10" FontSize="12" FontWeight="SemiBold"
+                                    Click="ValidateButton_Click"/>
+                        </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

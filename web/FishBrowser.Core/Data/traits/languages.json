@@ -1,0 +1,9 @@
+{
+  "trait": "browser.acceptLanguage",
+  "options": [
+    {"value": "zh-CN,zh;q=0.9,en;q=0.8", "label": "中文优先", "weight": 0.35, "region": "CN"},
+    {"value": "en-US,en;q=0.9", "label": "英文(美)优先", "weight": 0.3, "region": "US"},
+    {"value": "ja-JP,ja;q=0.9", "label": "日文优先", "weight": 0.08, "region": "JP"},
+    {"value": "ko-KR,ko;q=0.9", "label": "韩文优先", "weight": 0.06, "region": "KR"}
+  ]
+}

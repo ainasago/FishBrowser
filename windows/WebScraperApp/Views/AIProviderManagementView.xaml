@@ -1,0 +1,241 @@
+<Page x:Class="FishBrowser.WPF.Views.AIProviderManagementView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      mc:Ignorable="d" 
+      d:DesignHeight="800" d:DesignWidth="1400"
+      Title="AI 提供商配置">
+
+    <Page.Resources>
+        <!-- 卡片样式 -->
+        <Style x:Key="ProviderCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="0,0,16,16"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000" Opacity="0.1" BlurRadius="8" ShadowDepth="2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 主按钮样式 -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="4" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#005A9E"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#CCCCCC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 次要按钮样式 -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#0078D4"/>
+            <Setter Property="BorderBrush" Value="#0078D4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#F0F8FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 状态指示器样式 -->
+        <Style x:Key="StatusDotStyle" TargetType="Ellipse">
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="#F5F5F5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 顶部工具栏 -->
+        <Border Grid.Row="0" Background="White" BorderThickness="0,0,0,1" BorderBrush="#E0E0E0" Padding="24,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="AI 提供商配置" FontSize="24" FontWeight="Bold" Foreground="#333"/>
+                    <TextBlock Text="配置和管理 AI 服务提供商，支持 OpenAI、Gemini、通义千问等" 
+                               FontSize="13" Foreground="#666" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="➕ 快速配置" Style="{StaticResource PrimaryButtonStyle}" 
+                            Click="QuickSetup_Click" Margin="0,0,12,0"/>
+                    <Button Content="🔄 刷新" Style="{StaticResource SecondaryButtonStyle}" 
+                            Click="Refresh_Click" Margin="0,0,12,0"/>
+                    <Button Content="📊 使用统计" Style="{StaticResource SecondaryButtonStyle}" 
+                            Click="ViewStats_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 主内容区 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,20">
+            <StackPanel>
+                <!-- 空状态提示 -->
+                <Border x:Name="EmptyState" Style="{StaticResource ProviderCardStyle}" 
+                        Background="#FFF9E6" BorderBrush="#FFE5B3" Visibility="Collapsed"
+                        Padding="40">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="🤖" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                        <TextBlock Text="还没有配置 AI 提供商" FontSize="18" FontWeight="SemiBold" 
+                                   HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                        <TextBlock Text="点击「快速配置」开始设置，只需 2-3 步即可完成" 
+                                   FontSize="14" Foreground="#666" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                        <Button Content="开始配置" Style="{StaticResource PrimaryButtonStyle}" 
+                                Click="QuickSetup_Click" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 提供商列表 -->
+                <ItemsControl x:Name="ProvidersList">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource ProviderCardStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- 标题行 -->
+                                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Style="{StaticResource StatusDotStyle}" Fill="{Binding StatusColor}"/>
+                                            <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                            <Border Background="{Binding ProviderTypeBadgeColor}" CornerRadius="4" 
+                                                    Padding="8,4" Margin="12,0,0,0">
+                                                <TextBlock Text="{Binding ProviderTypeDisplay}" FontSize="11" 
+                                                           Foreground="White" FontWeight="SemiBold"/>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <Button Content="✏️ 编辑" Style="{StaticResource SecondaryButtonStyle}" 
+                                                    Click="Edit_Click" Tag="{Binding Id}" Margin="0,0,8,0"/>
+                                            <Button Content="🧪 测试" Style="{StaticResource SecondaryButtonStyle}" 
+                                                    Click="Test_Click" Tag="{Binding Id}" Margin="0,0,8,0"/>
+                                            <Button Content="🗑️" Style="{StaticResource SecondaryButtonStyle}" 
+                                                    Click="Delete_Click" Tag="{Binding Id}" 
+                                                    Foreground="#D13438" BorderBrush="#D13438"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- 信息行 -->
+                                    <Grid Grid.Row="1" Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="模型" FontSize="11" Foreground="#999" Margin="0,0,0,4"/>
+                                            <TextBlock Text="{Binding ModelId}" FontSize="13" FontWeight="SemiBold"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="API 密钥" FontSize="11" Foreground="#999" Margin="0,0,0,4"/>
+                                            <TextBlock FontSize="13" FontWeight="SemiBold">
+                                                <Run Text="{Binding ApiKeyCount}"/>
+                                                <Run Text=" 个" Foreground="#666"/>
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="今日使用" FontSize="11" Foreground="#999" Margin="0,0,0,4"/>
+                                            <TextBlock FontSize="13" FontWeight="SemiBold">
+                                                <Run Text="{Binding TodayUsage}"/>
+                                                <Run Text=" 次" Foreground="#666"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- 状态行 -->
+                                    <Border Grid.Row="2" Background="#F8F9FA" CornerRadius="4" Padding="12,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="健康状态：" FontSize="12" Foreground="#666" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding HealthStatus}" FontSize="12" 
+                                                           Foreground="{Binding HealthStatusColor}" 
+                                                           FontWeight="SemiBold" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding ResponseTime}" FontSize="11" 
+                                                           Foreground="#999" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="1" Text="{Binding LastUpdated}" 
+                                                       FontSize="11" Foreground="#999" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

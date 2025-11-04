@@ -1,0 +1,14 @@
+{
+  "trait": "system.locale",
+  "options": [
+    {"value": "zh-CN", "label": "中文(中国)", "weight": 0.35},
+    {"value": "en-US", "label": "English (US)", "weight": 0.3},
+    {"value": "ja-JP", "label": "日本語(日本)", "weight": 0.08},
+    {"value": "ko-KR", "label": "한국어(대한민국)", "weight": 0.06},
+    {"value": "fr-FR", "label": "Français (France)", "weight": 0.05},
+    {"value": "de-DE", "label": "Deutsch (Deutschland)", "weight": 0.05},
+    {"value": "ru-RU", "label": "Русский (Россия)", "weight": 0.04},
+    {"value": "es-ES", "label": "Español (España)", "weight": 0.04},
+    {"value": "pt-BR", "label": "Português (Brasil)", "weight": 0.03}
+  ]
+}

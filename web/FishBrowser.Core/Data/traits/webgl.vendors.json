@@ -1,0 +1,10 @@
+{
+  "trait": "graphics.webgl.vendor",
+  "options": [
+    {"value": "Google Inc. (NVIDIA)", "label": "Google (NVIDIA)", "weight": 0.25, "vendor": "NVIDIA"},
+    {"value": "Google Inc. (Intel)", "label": "Google (Intel)", "weight": 0.3, "vendor": "Intel"},
+    {"value": "Google Inc. (AMD)", "label": "Google (AMD)", "weight": 0.2, "vendor": "AMD"},
+    {"value": "Intel Inc.", "label": "Intel", "weight": 0.15, "vendor": "Intel"},
+    {"value": "NVIDIA Corporation", "label": "NVIDIA", "weight": 0.1, "vendor": "NVIDIA"}
+  ]
+}

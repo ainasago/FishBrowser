@@ -1,0 +1,14 @@
+{
+  "trait": "system.timezone",
+  "options": [
+    {"value": "Asia/Shanghai", "label": "中国标准时间", "weight": 0.3, "region": "CN"},
+    {"value": "Asia/Hong_Kong", "label": "香港", "weight": 0.05, "region": "HK"},
+    {"value": "America/New_York", "label": "美东", "weight": 0.18, "region": "US"},
+    {"value": "America/Los_Angeles", "label": "美西", "weight": 0.12, "region": "US"},
+    {"value": "Europe/London", "label": "伦敦", "weight": 0.08, "region": "GB"},
+    {"value": "Europe/Paris", "label": "巴黎", "weight": 0.07, "region": "FR"},
+    {"value": "Europe/Berlin", "label": "柏林", "weight": 0.06, "region": "DE"},
+    {"value": "Asia/Tokyo", "label": "东京", "weight": 0.07, "region": "JP"},
+    {"value": "Asia/Seoul", "label": "首尔", "weight": 0.07, "region": "KR"}
+  ]
+}

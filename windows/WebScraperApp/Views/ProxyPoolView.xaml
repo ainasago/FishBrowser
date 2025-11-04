@@ -1,0 +1,118 @@
+<Page x:Class="FishBrowser.WPF.Views.ProxyPoolView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Title="代理池">
+  <Grid Background="White">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <!-- 标题 -->
+    <TextBlock Grid.Row="0" Text="代理池管理" FontSize="20" FontWeight="Bold" Margin="16,12,16,0"/>
+
+    <!-- 主区域：左右分栏 -->
+    <Grid Grid.Row="1" Margin="16">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="280"/>
+        <ColumnDefinition Width="12"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="12"/>
+        <ColumnDefinition Width="360"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- 左侧：池列表 -->
+      <DockPanel Grid.Column="0">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+          <Button Content="新建池" Width="80" Click="AddPool_Click"/>
+          <Button Content="重命名" Width="80" Margin="8,0,0,0" Click="RenamePool_Click"/>
+          <Button Content="删除池" Width="80" Margin="8,0,0,0" Click="DeletePool_Click"/>
+        </StackPanel>
+        <ListBox x:Name="PoolsList" DisplayMemberPath="Name" SelectionChanged="PoolsList_SelectionChanged"/>
+      </DockPanel>
+
+      <!-- 中间分隔线 -->
+      <Separator Grid.Column="1" Margin="0" VerticalAlignment="Stretch"/>
+
+      <!-- 右侧：池成员与工具栏 -->
+      <DockPanel Grid.Column="2">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+          <TextBlock Text="成员" VerticalAlignment="Center" Margin="0,0,12,0"/>
+          <Button Content="添加代理" Width="90" Click="AddProxy_Click"/>
+          <Button Content="从池移除" Width="90" Margin="8,0,0,0" Click="RemoveFromPool_Click"/>
+          <Menu Margin="8,0,0,0">
+            <MenuItem Header="更多">
+              <MenuItem Header="导出成员" Click="ExportMembers_Click"/>
+              <Separator/>
+              <MenuItem Header="批量导入" Click="Import_Click"/>
+              <MenuItem Header="健康检查" Click="HealthCheck_Click"/>
+            </MenuItem>
+          </Menu>
+        </StackPanel>
+
+        <!-- 底部分页控制条 -->
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+          <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+            <Button Content="上一页" Width="70" Click="MembersPrev_Click"/>
+            <Button Content="下一页" Width="70" Margin="8,0,0,0" Click="MembersNext_Click"/>
+            <TextBlock x:Name="MembersPageInfo" Margin="12,0,0,0" VerticalAlignment="Center"/>
+          </StackPanel>
+        </DockPanel>
+
+        <!-- DataGrid 放最后填充剩余空间 -->
+        <DataGrid x:Name="MembersGrid" AutoGenerateColumns="False" SelectionMode="Extended" SelectionUnit="FullRow"
+                  CanUserAddRows="False" CanUserDeleteRows="False" BorderThickness="1" BorderBrush="#E0E0E0">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="地址" Binding="{Binding Address}" Width="150" IsReadOnly="True"/>
+            <DataGridTextColumn Header="端口" Binding="{Binding Port}" Width="80" IsReadOnly="True"/>
+            <DataGridTextColumn Header="协议" Binding="{Binding Protocol}" Width="80" IsReadOnly="True"/>
+            <DataGridTextColumn Header="用户名" Binding="{Binding Username}" Width="100" IsReadOnly="True"/>
+            <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80" IsReadOnly="True"/>
+            <DataGridTextColumn Header="响应时间(ms)" Binding="{Binding ResponseTimeMs}" Width="120" IsReadOnly="True"/>
+            <DataGridTextColumn Header="最后检查" Binding="{Binding LastCheckedAt, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="170" IsReadOnly="True"/>
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
+
+      <!-- 中右分隔线 -->
+      <Separator Grid.Column="3" Margin="0" VerticalAlignment="Stretch"/>
+
+      <!-- 最右侧：未分组侧栏 -->
+      <DockPanel Grid.Column="4">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+          <TextBlock Text="未分组" VerticalAlignment="Center" Margin="0,0,12,0"/>
+          <TextBox x:Name="UngroupedSearchBox" Width="160" Height="26"/>
+          <Button Content="搜索" Width="70" Margin="8,0,0,0" Click="UngroupedSearch_Click"/>
+        </StackPanel>
+
+        <!-- Bottom action bar must be declared before the fill element -->
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+          <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+            <Button Content="上一页" Width="70" Click="UngroupedPrev_Click"/>
+            <Button Content="下一页" Width="70" Margin="8,0,0,0" Click="UngroupedNext_Click"/>
+            <TextBlock x:Name="UngroupedPageInfo" Margin="12,0,0,0" VerticalAlignment="Center"/>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+            <Button Content="加入当前池" Width="100" Click="AddUngroupedToPool_Click"/>
+          </StackPanel>
+        </DockPanel>
+
+        <!-- DataGrid must be last to fill remaining space -->
+        <DataGrid x:Name="UngroupedGrid" AutoGenerateColumns="False" SelectionMode="Extended" SelectionUnit="FullRow"
+                  CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="False" BorderThickness="1" BorderBrush="#E0E0E0"
+                  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" EnableRowVirtualization="True" ScrollViewer.CanContentScroll="True">
+          <DataGrid.Columns>
+            <DataGridCheckBoxColumn Header="选" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
+            <DataGridTextColumn Header="地址" Binding="{Binding Address}" Width="*"/>
+            <DataGridTextColumn Header="端口" Binding="{Binding Port}" Width="70"/>
+            <DataGridTextColumn Header="协议" Binding="{Binding Protocol}" Width="70"/>
+            <DataGridTextColumn Header="标签" Binding="{Binding Label}" Width="120"/>
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
+    </Grid>
+  </Grid>
+</Page>

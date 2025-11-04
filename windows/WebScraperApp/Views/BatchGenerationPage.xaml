@@ -1,0 +1,54 @@
+<Page x:Class="FishBrowser.WPF.Views.BatchGenerationPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="批量生成指纹">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="140"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="选择预设 (Preset)" VerticalAlignment="Center"/>
+            <ComboBox x:Name="PresetCombo" Grid.Row="0" Grid.Column="1" Height="28"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="生成数量 (N)" Margin="0,10,0,0" VerticalAlignment="Center"/>
+            <TextBox x:Name="CountBox" Grid.Row="1" Grid.Column="1" Height="28" Margin="0,10,0,0" Text="20"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Seed 基础" Margin="0,10,0,0" VerticalAlignment="Center"/>
+            <TextBox x:Name="SeedBox" Grid.Row="2" Grid.Column="1" Height="28" Margin="0,10,0,0" Text="batch-seed"/>
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Region (可选)" Margin="0,10,0,0" VerticalAlignment="Center"/>
+            <TextBox x:Name="RegionBox" Grid.Row="3" Grid.Column="1" Height="28" Margin="0,10,0,0"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="DeviceClass (可选)" Margin="0,10,0,0" VerticalAlignment="Center"/>
+            <TextBox x:Name="DeviceClassBox" Grid.Row="4" Grid.Column="1" Height="28" Margin="0,10,0,0"/>
+
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="Vendor (可选)" Margin="0,10,0,0" VerticalAlignment="Center"/>
+            <TextBox x:Name="VendorBox" Grid.Row="5" Grid.Column="1" Height="28" Margin="0,10,0,0"/>
+
+            <CheckBox x:Name="UseUAGeneratorCheck" Grid.Row="6" Grid.ColumnSpan="2" Margin="0,12,0,0" Content="使用 UA 生成器覆盖 UA 相关键 (Chrome+Windows)"/>
+        </Grid>
+
+        <DockPanel Grid.Row="1" Margin="0,16,0,0">
+            <TextBlock x:Name="StatusText" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="生成并导出" Width="120" Margin="0,0,8,0" Click="GenerateExport_Click"/>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Page>

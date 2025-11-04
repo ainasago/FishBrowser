@@ -1,0 +1,432 @@
+<Window x:Class="FishBrowser.WPF.Views.Dialogs.BrowserEnvironmentEditorDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="浏览器环境编辑器" 
+        Width="1200" Height="800" 
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F5F5">
+    <Window.Resources>
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        <Style x:Key="ScoreCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#DDD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧：编辑区 -->
+        <Border Grid.Column="0" Background="White" Margin="0,0,8,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="24">
+                    <!-- 基本信息 -->
+                    <TextBlock Text="📋 基本信息" Style="{StaticResource SectionHeaderStyle}"/>
+                    <Border Background="#F9F9F9" Padding="16" CornerRadius="8" Margin="0,0,0,24">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 名称 -->
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="浏览器名称 *" Style="{StaticResource FieldLabelStyle}"/>
+                                <TextBox x:Name="NameTextBox" Height="32"/>
+                            </StackPanel>
+
+                            <!-- 分组 -->
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="所属分组" Style="{StaticResource FieldLabelStyle}"/>
+                                <ComboBox x:Name="GroupComboBox" Height="32" DisplayMemberPath="Name"/>
+                            </StackPanel>
+
+                            <!-- 备注 -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
+                                <TextBlock Text="备注" Style="{StaticResource FieldLabelStyle}"/>
+                                <TextBox x:Name="NotesTextBox" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- 浏览器配置 -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="🌐 浏览器配置" Style="{StaticResource SectionHeaderStyle}"/>
+                        <CheckBox x:Name="LockBrowserConfigCheckBox" Grid.Column="1" Content="📌 固定配置" VerticalAlignment="Center" Margin="0,0,0,12"
+                                  ToolTip="固定操作系统、分辨率、语言等配置（完全随机时不改变）"/>
+                    </Grid>
+                    <Border Background="#F9F9F9" Padding="16" CornerRadius="8" Margin="0,0,0,24">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 引擎 -->
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="浏览器引擎 *" Style="{StaticResource FieldLabelStyle}"/>
+                                <ComboBox x:Name="EngineComboBox" Height="32" SelectionChanged="EngineComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="UndetectedChrome (推荐)" Tag="UndetectedChrome" IsSelected="True"/>
+                                    <ComboBoxItem Content="Chromium" Tag="Chromium"/>
+                                    <ComboBoxItem Content="Firefox" Tag="Firefox"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- 操作系统 -->
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="操作系统 *" Style="{StaticResource FieldLabelStyle}"/>
+                                <ComboBox x:Name="OSComboBox" Height="32" SelectionChanged="OSComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Windows" IsSelected="True"/>
+                                    <ComboBoxItem Content="MacOS"/>
+                                    <ComboBoxItem Content="Linux"/>
+                                    <ComboBoxItem Content="Android"/>
+                                    <ComboBoxItem Content="iOS"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- 屏幕分辨率 -->
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock Text="屏幕分辨率" Style="{StaticResource FieldLabelStyle}"/>
+                                <ComboBox x:Name="ResolutionComboBox" Height="32" SelectionChanged="ResolutionComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="1920x1080 (桌面推荐)" Tag="1920x1080" IsSelected="True"/>
+                                    <ComboBoxItem Content="1366x768" Tag="1366x768"/>
+                                    <ComboBoxItem Content="1280x720" Tag="1280x720"/>
+                                    <ComboBoxItem Content="2560x1440 (2K)" Tag="2560x1440"/>
+                                    <ComboBoxItem Content="3840x2160 (4K)" Tag="3840x2160"/>
+                                    <ComboBoxItem Content="390x844 (iPhone 13/14)" Tag="390x844"/>
+                                    <ComboBoxItem Content="393x852 (iPhone 15)" Tag="393x852"/>
+                                    <ComboBoxItem Content="428x926 (iPhone 14 Pro Max)" Tag="428x926"/>
+                                    <ComboBoxItem Content="360x800 (Android 常见)" Tag="360x800"/>
+                                    <ComboBoxItem Content="412x915 (Pixel 7)" Tag="412x915"/>
+                                    <ComboBoxItem Content="1080x2400 (Android 旗舰)" Tag="1080x2400"/>
+                                    <ComboBoxItem Content="820x1180 (iPad)" Tag="820x1180"/>
+                                    <ComboBoxItem Content="1024x1366 (iPad Pro)" Tag="1024x1366"/>
+                                    <ComboBoxItem Content="自定义" Tag="custom"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- 语言区域 -->
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <TextBlock Text="语言区域" Style="{StaticResource FieldLabelStyle}"/>
+                                <ComboBox x:Name="LocaleComboBox" Height="32" SelectionChanged="LocaleComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="zh-CN (简体中文)" Tag="zh-CN" IsSelected="True"/>
+                                    <ComboBoxItem Content="en-US (美国英语)" Tag="en-US"/>
+                                    <ComboBoxItem Content="ja-JP (日本語)" Tag="ja-JP"/>
+                                    <ComboBoxItem Content="ko-KR (한국어)" Tag="ko-KR"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- 持久化 -->
+                            <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+                                <CheckBox x:Name="PersistenceCheckBox" Content="启用会话持久化（保存 Cookie、历史记录等）" IsChecked="True"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- 指纹特征 -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="🎭 指纹特征" Style="{StaticResource SectionHeaderStyle}"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Content="🎲 完全随机" Width="100" Height="32" Margin="0,0,8,0" 
+                                    Click="FullyRandomize_Click" Background="#4CAF50" Foreground="White" BorderThickness="0"
+                                    ToolTip="生成完全随机的指纹特征（推荐）"/>
+                            <Button Content="🔄 重新生成" Width="100" Height="32" 
+                                    Click="Regenerate_Click"
+                                    ToolTip="基于当前配置重新生成指纹"/>
+                        </StackPanel>
+                    </Grid>
+                    
+                    <Border Background="#F9F9F9" Padding="16" CornerRadius="8" Margin="0,0,0,24">
+                        <StackPanel>
+                            <!-- User-Agent -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="User-Agent" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="UserAgentTextBox" Height="32" TextChanged="FingerprintField_Changed"/>
+                                </StackPanel>
+                                <CheckBox x:Name="LockUACheckBox" Grid.Column="1" Content="📌" VerticalAlignment="Center" Margin="8,18,0,0"
+                                          ToolTip="固定此项（完全随机时不改变）" FontSize="16"/>
+                                <Button Grid.Column="2" Content="🔄" Width="32" Height="32" Margin="4,18,0,0"
+                                        Click="RandomizeUA_Click" ToolTip="随机 User-Agent"/>
+                            </Grid>
+
+                            <!-- Platform -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Platform" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="PlatformTextBox" Height="32" TextChanged="FingerprintField_Changed"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Timezone" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="TimezoneTextBox" Height="32" TextChanged="FingerprintField_Changed"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 硬件配置 -->
+                            <TextBlock Text="硬件配置" FontWeight="Bold" Margin="0,8,0,8"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="CPU 核心数" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="HardwareConcurrencyTextBox" Height="32" TextChanged="FingerprintField_Changed"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="内存 (GB)" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="DeviceMemoryTextBox" Height="32" TextChanged="FingerprintField_Changed"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="触摸点数" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="MaxTouchPointsTextBox" Height="32" TextChanged="FingerprintField_Changed"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- WebGL -->
+                            <Grid Margin="0,8,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="WebGL 配置" FontWeight="Bold"/>
+                                <CheckBox x:Name="LockWebGLCheckBox" Grid.Column="1" Content="📌 固定" VerticalAlignment="Center" Margin="0,0,8,0"
+                                          ToolTip="固定此项（完全随机时不改变）"/>
+                                <Button Grid.Column="2" Content="🔄 随机" Width="70" Height="28"
+                                        Click="RandomizeWebGL_Click" ToolTip="随机 WebGL 配置"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="WebGL Vendor" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="WebGLVendorTextBox" Height="32" TextChanged="FingerprintField_Changed"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="WebGL Renderer" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="WebGLRendererTextBox" Height="32" TextChanged="FingerprintField_Changed"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 字体列表 -->
+                            <Grid Margin="0,8,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="字体列表" FontWeight="Bold"/>
+                                <CheckBox x:Name="LockFontsCheckBox" Grid.Column="1" Content="📌 固定" VerticalAlignment="Center" Margin="0,0,8,0"
+                                          ToolTip="固定此项（完全随机时不改变）"/>
+                                <Button Grid.Column="2" Content="🔄 随机" Width="70" Height="28"
+                                        Click="RandomizeFonts_Click" ToolTip="随机字体列表（30-50个）"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="FontsListTextBox" Grid.Column="0" Height="60" TextWrapping="Wrap" 
+                                         IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                                         ToolTip="已选字体列表（逗号分隔）"/>
+                                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                    <TextBlock x:Name="FontsCountText" Text="0 个字体" FontSize="11" Foreground="#666"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 高级选项折叠 -->
+                            <Expander Header="🔧 高级选项（Languages, Plugins, Sec-CH-UA 等）" IsExpanded="False" Margin="0,8,0,0">
+                                <StackPanel Margin="0,12,0,0">
+                                    <TextBlock Text="Languages JSON" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="LanguagesJsonTextBox" Height="32" Margin="0,0,0,12" TextChanged="FingerprintField_Changed"/>
+                                    
+                                    <TextBlock Text="Plugins JSON" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="PluginsJsonTextBox" Height="32" Margin="0,0,0,12" TextChanged="FingerprintField_Changed"/>
+                                    
+                                    <TextBlock Text="Sec-CH-UA" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="SecChUaTextBox" Height="32" Margin="0,0,0,12" TextChanged="FingerprintField_Changed"/>
+                                    
+                                    <TextBlock Text="Sec-CH-UA-Platform" Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBox x:Name="SecChUaPlatformTextBox" Height="32" Margin="0,0,0,12" TextChanged="FingerprintField_Changed"/>
+                                    
+                                    <TextBlock Text="Webdriver 模式" Style="{StaticResource FieldLabelStyle}"/>
+                                    <ComboBox x:Name="WebdriverModeComboBox" Height="32" Margin="0,0,0,12" SelectionChanged="WebdriverMode_SelectionChanged">
+                                        <ComboBoxItem Content="undefined (推荐 - 完全移除)" Tag="undefined" IsSelected="True"/>
+                                        <ComboBoxItem Content="true (与真实 Chrome 一致)" Tag="true"/>
+                                        <ComboBoxItem Content="false (可能被检测)" Tag="false"/>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- 右侧：实时预览和评分 -->
+        <Border Grid.Column="1" Background="#FAFAFA" Padding="16">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- 总体评分 -->
+                    <TextBlock Text="📊 指纹评分" FontSize="16" FontWeight="Bold" Margin="0,0,0,16"/>
+                    
+                    <Border Style="{StaticResource ScoreCardStyle}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="总体评分" FontSize="12" Foreground="#666" Margin="0,0,0,8"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ProgressBar x:Name="TotalScoreBar" Grid.Column="0" Height="24" Minimum="0" Maximum="100" Value="0"/>
+                                <TextBlock x:Name="TotalScoreText" Grid.Column="1" Text="0" FontSize="20" FontWeight="Bold" 
+                                           Margin="12,0,0,0" VerticalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock x:Name="RiskLevelText" Text="风险等级: 未评估" FontSize="11" Foreground="#666" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 分项评分 -->
+                    <TextBlock Text="📈 详细评分" FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
+                    
+                    <!-- 一致性 -->
+                    <Border Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,0,0,8">
+                        <StackPanel>
+                            <TextBlock Text="一致性检查" FontSize="11" Foreground="#666"/>
+                            <Grid Margin="0,4,0,0">
+                                <ProgressBar x:Name="ConsistencyScoreBar" Height="16" Minimum="0" Maximum="100" Value="0"/>
+                                <TextBlock x:Name="ConsistencyScoreText" Text="0" FontSize="12" FontWeight="Bold" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 真实性 -->
+                    <Border Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,0,0,8">
+                        <StackPanel>
+                            <TextBlock Text="真实性检查" FontSize="11" Foreground="#666"/>
+                            <Grid Margin="0,4,0,0">
+                                <ProgressBar x:Name="RealismScoreBar" Height="16" Minimum="0" Maximum="100" Value="0"/>
+                                <TextBlock x:Name="RealismScoreText" Text="0" FontSize="12" FontWeight="Bold" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Cloudflare 风险 -->
+                    <Border Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="Cloudflare 风险" FontSize="11" Foreground="#666"/>
+                            <Grid Margin="0,4,0,0">
+                                <ProgressBar x:Name="CloudflareRiskBar" Height="16" Minimum="0" Maximum="100" Value="0" 
+                                             Foreground="#F44336"/>
+                                <TextBlock x:Name="CloudflareRiskText" Text="0" FontSize="12" FontWeight="Bold" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock Text="（越低越好）" FontSize="10" Foreground="#999" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 建议 -->
+                    <TextBlock Text="💡 优化建议" FontSize="14" FontWeight="Bold" Margin="0,0,0,12"/>
+                    <Border Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="4" Padding="12">
+                        <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="RecommendationsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                            <TextBlock Text="•" Margin="0,0,8,0" Foreground="#FF9800"/>
+                                            <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#666" FontSize="11"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- 指纹预览 -->
+                    <TextBlock Text="🔍 指纹预览" FontSize="14" FontWeight="Bold" Margin="0,16,0,12"/>
+                    <Border Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="4" Padding="12">
+                        <ScrollViewer MaxHeight="250" VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="FingerprintPreviewText" FontFamily="Consolas" FontSize="10" 
+                                       Foreground="#333" TextWrapping="Wrap"/>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- 底部按钮栏 -->
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Background="White" 
+                BorderBrush="#DDD" BorderThickness="0,1,0,0" 
+                Padding="24,16" VerticalAlignment="Bottom">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <TextBlock x:Name="StatusText" Text="就绪" VerticalAlignment="Center" Foreground="#666"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="取消" Width="100" Height="36" Margin="0,0,12,0" Click="Cancel_Click"/>
+                    <Button x:Name="SaveButton" Content="保存" Width="100" Height="36" 
+                            Background="#4CAF50" Foreground="White" BorderThickness="0" 
+                            Click="Save_Click" FontWeight="Bold"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

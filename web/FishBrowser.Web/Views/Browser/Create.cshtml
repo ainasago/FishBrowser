@@ -1,0 +1,476 @@
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "新建浏览器";
+}
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 编辑表单 -->
+            <div class="col-md-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">📋 基本信息</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="browserName">浏览器名称 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="browserName" placeholder="输入浏览器名称" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="browserNotes">备注</label>
+                            <textarea class="form-control" id="browserNotes" rows="3" placeholder="输入备注信息"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="browserGroup">分组</label>
+                            <select class="form-control" id="browserGroup">
+                                <option value="">未分组</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">⚙️ 浏览器配置</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="browserEngine">浏览器引擎</label>
+                            <select class="form-control" id="browserEngine">
+                                <option value="UndetectedChrome">UndetectedChrome (推荐)</option>
+                                <option value="Chromium">Chromium</option>
+                                <option value="Firefox">Firefox</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="browserOS">操作系统</label>
+                            <select class="form-control" id="browserOS">
+                                <option value="Windows">Windows</option>
+                                <option value="MacOS">MacOS</option>
+                                <option value="Linux">Linux</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="browserResolution">分辨率</label>
+                            <input type="text" class="form-control" id="browserResolution" value="1920x1080" placeholder="宽x高">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="browserLocale">语言/地区</label>
+                            <input type="text" class="form-control" id="browserLocale" value="zh-CN" placeholder="例: zh-CN, en-US">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="timezone">时区</label>
+                            <input type="text" class="form-control" id="timezone" value="Asia/Shanghai" placeholder="例: Asia/Shanghai">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="persistence" checked>
+                                <label class="custom-control-label" for="persistence">启用会话持久化（保存 Cookie、历史记录等）</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="headless">
+                                <label class="custom-control-label" for="headless">无头模式（Headless）</label>
+                            </div>
+                            <small class="form-text text-muted">Windows 默认有头模式，Linux 建议使用无头模式</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 指纹特征 -->
+                <div class="card card-purple">
+                    <div class="card-header">
+                        <h3 class="card-title">🎭 指纹特征</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-sm btn-success" onclick="fullyRandomize()">
+                                <i class="fas fa-dice"></i> 完全随机
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="userAgent">User Agent</label>
+                            <input type="text" class="form-control" id="userAgent" placeholder="浏览器标识">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="platform">平台</label>
+                            <select class="form-control" id="platform">
+                                <option value="Win32">Win32 (Windows)</option>
+                                <option value="MacIntel">MacIntel (Mac)</option>
+                                <option value="Linux x86_64">Linux x86_64</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cpuCores">CPU 核心数</label>
+                            <input type="number" class="form-control" id="cpuCores" value="8" min="1" max="128">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="memory">内存 (GB)</label>
+                            <input type="number" class="form-control" id="memory" value="8" min="1" max="256">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="touchPoints">触摸点数</label>
+                            <input type="number" class="form-control" id="touchPoints" value="0" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="webglVendor">WebGL Vendor</label>
+                            <input type="text" class="form-control" id="webglVendor" placeholder="例: Google Inc.">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="webglRenderer">WebGL Renderer</label>
+                            <input type="text" class="form-control" id="webglRenderer" placeholder="例: ANGLE (Intel HD Graphics)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fontsList">字体列表 <small class="text-muted">(逗号分隔)</small></label>
+                            <textarea class="form-control" id="fontsList" rows="3" placeholder="Arial, Verdana, Times New Roman..."></textarea>
+                            <small class="form-text text-muted" id="fontsCount">0 个字体</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 代理配置 -->
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">🌐 代理配置</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="proxyMode">代理模式</label>
+                            <select class="form-control" id="proxyMode">
+                                <option value="none">无代理</option>
+                                <option value="api">API 代理</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="proxyUrl">代理地址</label>
+                            <input type="text" class="form-control" id="proxyUrl" placeholder="http://proxy.example.com:8080">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="card">
+                    <div class="card-body">
+                        <button type="button" class="btn btn-primary" onclick="saveBrowser()">
+                            <i class="fas fa-save"></i> 创建
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> 取消
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧面板 -->
+            <div class="col-md-4">
+                <!-- 指纹评分 -->
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">📊 指纹评分</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>总体评分</span>
+                                <strong id="totalScore">0</strong>
+                            </div>
+                            <div class="progress">
+                                <div id="scoreBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="small">
+                            <div class="mb-2">
+                                <span>User Agent: </span>
+                                <span id="uaScore" class="badge badge-secondary">0%</span>
+                            </div>
+                            <div class="mb-2">
+                                <span>Platform: </span>
+                                <span id="platformScore" class="badge badge-secondary">0%</span>
+                            </div>
+                            <div class="mb-2">
+                                <span>Hardware: </span>
+                                <span id="hardwareScore" class="badge badge-secondary">0%</span>
+                            </div>
+                            <div class="mb-2">
+                                <span>WebGL: </span>
+                                <span id="webglScore" class="badge badge-secondary">0%</span>
+                            </div>
+                            <div class="mb-2">
+                                <span>Fonts: </span>
+                                <span id="fontsScore" class="badge badge-secondary">0%</span>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div id="riskLevel" class="alert alert-info mb-0">
+                            <strong>风险等级:</strong> 未评估
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速操作 -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">⚡ 快速操作</h3>
+                    </div>
+                    <div class="card-body">
+                        <button type="button" class="btn btn-block btn-success mb-2" onclick="randomizeUA()">
+                            <i class="fas fa-random"></i> 随机 User Agent
+                        </button>
+                        <button type="button" class="btn btn-block btn-info mb-2" onclick="randomizeWebGL()">
+                            <i class="fas fa-random"></i> 随机 WebGL
+                        </button>
+                        <button type="button" class="btn btn-block btn-warning" onclick="randomizeFonts()">
+                            <i class="fas fa-random"></i> 随机字体
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadGroups();
+            updateFingerprint();
+            
+            // 监听指纹字段变化
+            $('#userAgent, #platform, #cpuCores, #memory, #touchPoints, #webglVendor, #webglRenderer, #fontsList').on('change keyup', function() {
+                updateFingerprint();
+            });
+        });
+
+        // 加载分组
+        function loadGroups() {
+            $.ajax({
+                url: '@Url.Action("GetGroups", "Browser")',
+                method: 'GET',
+                success: function(response) {
+                    console.log('分组响应:', response);
+                    const select = $('#browserGroup');
+                    
+                    // 处理 API 返回的数据格式
+                    let groups = [];
+                    if (response && response.success && response.data) {
+                        groups = response.data;
+                    } else if (response && Array.isArray(response)) {
+                        groups = response;
+                    }
+                    
+                    if (groups && groups.length > 0) {
+                        groups.forEach(function(group) {
+                            select.append(`<option value="${group.id}">${group.name}</option>`);
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error('加载分组失败:', xhr);
+                    showError('加载分组失败');
+                }
+            });
+        }
+
+        // 保存浏览器
+        function saveBrowser() {
+            // 解析分辨率
+            const resolution = $('#browserResolution').val().split('x');
+            const viewportWidth = parseInt(resolution[0]) || 1920;
+            const viewportHeight = parseInt(resolution[1]) || 1080;
+            
+            // 解析字体列表为 JSON
+            const fontsText = $('#fontsList').val();
+            const fontsArray = fontsText ? fontsText.split(',').map(f => f.trim()).filter(f => f) : [];
+            const fontsJson = JSON.stringify(fontsArray);
+            
+            const data = {
+                name: $('#browserName').val(),
+                notes: $('#browserNotes').val(),
+                groupId: $('#browserGroup').val() || null,
+                // 浏览器配置
+                engine: $('#browserEngine').val(),
+                os: $('#browserOS').val(),
+                viewportWidth: viewportWidth,
+                viewportHeight: viewportHeight,
+                locale: $('#browserLocale').val(),
+                timezone: $('#timezone').val(),
+                enablePersistence: $('#persistence').is(':checked'),
+                headless: $('#headless').is(':checked'),
+                // 指纹特征
+                userAgent: $('#userAgent').val(),
+                platform: $('#platform').val(),
+                hardwareConcurrency: parseInt($('#cpuCores').val()) || 8,
+                deviceMemory: parseInt($('#memory').val()) || 8,
+                maxTouchPoints: parseInt($('#touchPoints').val()) || 0,
+                webGLVendor: $('#webglVendor').val(),
+                webGLRenderer: $('#webglRenderer').val(),
+                fontsJson: fontsJson,
+                // 代理配置
+                proxyMode: $('#proxyMode').val(),
+                proxyApiUrl: $('#proxyUrl').val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("CreateBrowser")',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    if (response.success) {
+                        showSuccess('浏览器创建成功');
+                        setTimeout(() => {
+                            window.location.href = '@Url.Action("Index")';
+                        }, 1000);
+                    } else {
+                        showError(response.error || '创建失败');
+                    }
+                },
+                error: function() {
+                    showError('创建失败，请稍后重试');
+                }
+            });
+        }
+
+        // 更新指纹评分
+        function updateFingerprint() {
+            let score = 0;
+            
+            // User Agent 评分
+            const ua = $('#userAgent').val();
+            const uaScore = ua && ua.length > 50 ? 25 : 0;
+            score += uaScore;
+            $('#uaScore').text(uaScore + '%');
+            
+            // Platform 评分
+            const platform = $('#platform').val();
+            const platformScore = platform ? 15 : 0;
+            score += platformScore;
+            $('#platformScore').text(platformScore + '%');
+            
+            // Hardware 评分
+            const cpuCores = parseInt($('#cpuCores').val()) || 0;
+            const memory = parseInt($('#memory').val()) || 0;
+            const hardwareScore = (cpuCores > 0 && memory > 0) ? 20 : 0;
+            score += hardwareScore;
+            $('#hardwareScore').text(hardwareScore + '%');
+            
+            // WebGL 评分
+            const webgl = $('#webglVendor').val() && $('#webglRenderer').val();
+            const webglScore = webgl ? 20 : 0;
+            score += webglScore;
+            $('#webglScore').text(webglScore + '%');
+            
+            // Fonts 评分
+            const fonts = $('#fontsList').val();
+            const fontCount = fonts ? fonts.split(',').length : 0;
+            const fontsScore = fontCount > 5 ? 20 : (fontCount > 0 ? 10 : 0);
+            score += fontsScore;
+            $('#fontsScore').text(fontsScore + '%');
+            $('#fontsCount').text(fontCount + ' 个字体');
+            
+            // 更新总分
+            $('#totalScore').text(score);
+            $('#scoreBar').css('width', score + '%');
+            
+            // 风险等级
+            let riskLevel = '未评估';
+            let alertClass = 'alert-info';
+            if (score >= 80) {
+                riskLevel = '✅ 低风险 (推荐)';
+                alertClass = 'alert-success';
+            } else if (score >= 60) {
+                riskLevel = '⚠️ 中风险';
+                alertClass = 'alert-warning';
+            } else if (score > 0) {
+                riskLevel = '❌ 高风险';
+                alertClass = 'alert-danger';
+            }
+            
+            $('#riskLevel').removeClass('alert-info alert-success alert-warning alert-danger').addClass(alertClass);
+            $('#riskLevel').html(`<strong>风险等级:</strong> ${riskLevel}`);
+        }
+
+        // 完全随机
+        function fullyRandomize() {
+            randomizeUA();
+            randomizeWebGL();
+            randomizeFonts();
+            updateFingerprint();
+        }
+
+        // 随机 User Agent
+        function randomizeUA() {
+            const uas = [
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            ];
+            $('#userAgent').val(uas[Math.floor(Math.random() * uas.length)]);
+            updateFingerprint();
+        }
+
+        // 随机 WebGL
+        function randomizeWebGL() {
+            const vendors = ['Google Inc.', 'Apple Inc.', 'NVIDIA Corporation'];
+            const renderers = ['ANGLE (Intel HD Graphics)', 'ANGLE (NVIDIA GeForce GTX 1080)', 'Apple M1'];
+            $('#webglVendor').val(vendors[Math.floor(Math.random() * vendors.length)]);
+            $('#webglRenderer').val(renderers[Math.floor(Math.random() * renderers.length)]);
+            updateFingerprint();
+        }
+
+        // 随机字体
+        function randomizeFonts() {
+            const allFonts = ['Arial', 'Verdana', 'Times New Roman', 'Courier New', 'Georgia', 'Palatino', 'Garamond', 'Bookman', 'Comic Sans MS', 'Trebuchet MS', 'Impact', 'Lucida Console', 'Tahoma', 'Lucida Grande', 'Segoe UI'];
+            const shuffled = allFonts.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 8) + 3);
+            $('#fontsList').val(shuffled.join(', '));
+            updateFingerprint();
+        }
+
+        // 显示成功消息
+        function showSuccess(message) {
+            if (typeof toastr !== 'undefined') {
+                toastr.success(message);
+            } else {
+                alert('成功: ' + message);
+            }
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            if (typeof toastr !== 'undefined') {
+                toastr.error(message);
+            } else {
+                alert('错误: ' + message);
+            }
+        }
+    </script>
+
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+}

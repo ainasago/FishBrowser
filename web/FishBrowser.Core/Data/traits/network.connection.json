@@ -1,0 +1,19 @@
+{
+  "traits": {
+    "network.connection.type": [
+      {"value": "4g", "weight": 0.7},
+      {"value": "3g", "weight": 0.2},
+      {"value": "2g", "weight": 0.07},
+      {"value": "slow-2g", "weight": 0.03}
+    ],
+    "network.connection.downlink": [
+      {"value": 10, "weight": 0.4}, {"value": 20, "weight": 0.3}, {"value": 5, "weight": 0.2}, {"value": 1, "weight": 0.1}
+    ],
+    "network.connection.rtt": [
+      {"value": 50, "weight": 0.4}, {"value": 150, "weight": 0.3}, {"value": 300, "weight": 0.2}, {"value": 800, "weight": 0.1}
+    ],
+    "network.connection.saveData": [
+      {"value": false, "weight": 0.85}, {"value": true, "weight": 0.15}
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "uaLanguageWeights": {
+    "en-US": 0.30,
+    "zh-CN": 0.25,
+    "es-ES": 0.15,
+    "pt-BR": 0.10,
+    "ja-JP": 0.08,
+    "de-DE": 0.06,
+    "en-GB": 0.06
+  },
+  "engineWeights": { "chrome": 0.6, "firefox": 0.2, "webkit": 0.1, "edge": 0.07, "brave": 0.03 },
+  "osWeights": { "windows": 0.6, "macos": 0.18, "linux": 0.1, "android": 0.07, "ios": 0.05 },
+  "desktop": {
+    "canvas": { "noise": 0.7, "real": 0.3 },
+    "webglImage": { "noise": 0.7, "real": 0.3 },
+    "webglInfo": { "ua_based": 0.6, "custom": 0.25, "real": 0.1, "disable_hwaccel": 0.05 },
+    "webgpu": { "match_webgl": 0.6, "real": 0.2, "disable": 0.2 },
+    "fonts": { "real": 0.7, "custom": 0.3 }
+  },
+  "mobile": {
+    "canvas": { "noise": 0.8, "real": 0.2 },
+    "webglImage": { "noise": 0.8, "real": 0.2 },
+    "webglInfo": { "ua_based": 1.0 },
+    "webgpu": { "disable": 1.0 },
+    "fonts": { "real": 1.0 }
+  }
+}

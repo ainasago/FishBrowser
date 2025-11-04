@@ -1,0 +1,271 @@
+<Page x:Class="FishBrowser.WPF.Views.DashboardView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:chart="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+      mc:Ignorable="d"
+      Title="仪表盘">
+    
+    <Page.Resources>
+        <!-- 卡片样式 -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000" Direction="270" ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- 标题样式 -->
+        <Style x:Key="TitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="Foreground" Value="#333333"/>
+        </Style>
+        
+        <!-- 统计卡片样式 -->
+        <Style x:Key="StatCardStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,0,16,0"/>
+            <Setter Property="MinHeight" Value="120"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000" Direction="270" ShadowDepth="2" BlurRadius="8" Opacity="0.1"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- 快速操作按钮样式 -->
+        <Style x:Key="QuickActionStyle" TargetType="Button">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#106EBE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Background="#F5F7FA" Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- 欢迎区域 -->
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#0078D4" Offset="0"/>
+                        <GradientStop Color="#106EBE" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="欢迎使用指纹浏览器采集系统" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,8"/>
+                        <TextBlock Text="今天是美好的一天，让我们开始高效的工作吧！" FontSize="14" Foreground="#E0F0FF"/>
+                        <TextBlock x:Name="CurrentDateTimeText" FontSize="14" Foreground="#E0F0FF" Margin="0,8,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <TextBlock x:Name="GreetingText" FontSize="18" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Right"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+            <!-- 统计卡片区域 -->
+            <Grid Grid.Row="1" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- 总任务数 -->
+                <Border Grid.Column="0" Style="{StaticResource StatCardStyle}" Background="#E3F2FD">
+                    <StackPanel>
+                        <TextBlock Text="总任务数" FontSize="14" Foreground="#666666"/>
+                        <TextBlock x:Name="TotalTasksText" Text="0" FontSize="32" FontWeight="Bold" Foreground="#0078D4" Margin="0,8,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock x:Name="TotalTasksChangeText" FontSize="12" Foreground="#107C10"/>
+                            <TextBlock x:Name="TotalTasksChangePercentText" FontSize="12" Foreground="#107C10" Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 成功数 -->
+                <Border Grid.Column="1" Style="{StaticResource StatCardStyle}" Background="#E8F5E9">
+                    <StackPanel>
+                        <TextBlock Text="成功数" FontSize="14" Foreground="#666666"/>
+                        <TextBlock x:Name="SuccessTasksText" Text="0" FontSize="32" FontWeight="Bold" Foreground="#107C10" Margin="0,8,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock x:Name="SuccessRateText" FontSize="12" Foreground="#107C10"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 失败数 -->
+                <Border Grid.Column="2" Style="{StaticResource StatCardStyle}" Background="#FFEBEE">
+                    <StackPanel>
+                        <TextBlock Text="失败数" FontSize="14" Foreground="#666666"/>
+                        <TextBlock x:Name="FailedTasksText" Text="0" FontSize="32" FontWeight="Bold" Foreground="#E81123" Margin="0,8,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock x:Name="FailureRateText" FontSize="12" Foreground="#E81123"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 进行中 -->
+                <Border Grid.Column="3" Style="{StaticResource StatCardStyle}" Background="#FFF3E0">
+                    <StackPanel>
+                        <TextBlock Text="进行中" FontSize="14" Foreground="#666666"/>
+                        <TextBlock x:Name="InProgressTasksText" Text="0" FontSize="32" FontWeight="Bold" Foreground="#FFB900" Margin="0,8,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock x:Name="ActiveThreadsText" FontSize="12" Foreground="#FFB900"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            
+            <!-- 图表和快速操作区域 -->
+            <Grid Grid.Row="2" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- 任务趋势图表 -->
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="任务执行趋势" Style="{StaticResource TitleStyle}"/>
+                        <Grid Height="250">
+                            <chart:CartesianChart x:Name="TaskTrendChart" Background="Transparent">
+                                <chart:CartesianChart.AxisX>
+                                    <chart:Axis Title="时间" Labels="{Binding TrendLabels}"/>
+                                </chart:CartesianChart.AxisX>
+                                <chart:CartesianChart.AxisY>
+                                    <chart:Axis Title="任务数" LabelFormatter="{Binding Formatter}"/>
+                                </chart:CartesianChart.AxisY>
+                            </chart:CartesianChart>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 快速操作 -->
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="16,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="快速操作" Style="{StaticResource TitleStyle}"/>
+                        <Button x:Name="NewTaskButton" Content="新建任务" Style="{StaticResource QuickActionStyle}" Click="NewTask_Click"/>
+                        <Button x:Name="NewBrowserButton" Content="新建浏览器" Style="{StaticResource QuickActionStyle}" Click="NewBrowser_Click"/>
+                        <Button x:Name="ImportProxyButton" Content="导入代理" Style="{StaticResource QuickActionStyle}" Click="ImportProxy_Click"/>
+                        <Button x:Name="ExportDataButton" Content="导出数据" Style="{StaticResource QuickActionStyle}" Click="ExportData_Click"/>
+                        <Button x:Name="ViewLogsButton" Content="查看日志" Style="{StaticResource QuickActionStyle}" Click="ViewLogs_Click"/>
+                        <Button x:Name="SettingsButton" Content="系统设置" Style="{StaticResource QuickActionStyle}" Click="Settings_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            
+            <!-- 系统状态和最近任务区域 -->
+            <Grid Grid.Row="3" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- 系统状态 -->
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="系统状态" Style="{StaticResource TitleStyle}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="CPU使用率:" Margin="0,0,0,8"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="CpuUsageText" Text="0%" HorizontalAlignment="Right" Margin="0,0,0,8"/>
+                            
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="内存使用率:" Margin="0,0,0,8"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="MemoryUsageText" Text="0%" HorizontalAlignment="Right" Margin="0,0,0,8"/>
+                            
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="活跃浏览器:" Margin="0,0,0,8"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ActiveBrowsersText" Text="0" HorizontalAlignment="Right" Margin="0,0,0,8"/>
+                            
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="可用代理:" Margin="0,0,0,8"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" x:Name="AvailableProxiesText" Text="0" HorizontalAlignment="Right" Margin="0,0,0,8"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 最近任务 -->
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="16,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="最近任务" Style="{StaticResource TitleStyle}"/>
+                        <DataGrid x:Name="RecentTasksGrid" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E0E0E0" HeadersVisibility="Column" Background="Transparent" BorderThickness="0" MaxHeight="200">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="任务名称" Binding="{Binding Name}" Width="*"/>
+                                <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80"/>
+                                <DataGridTextColumn Header="完成时间" Binding="{Binding CompletedTime}" Width="120"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Button x:Name="ViewAllTasksButton" Content="查看全部任务" Background="Transparent" Foreground="#0078D4" BorderThickness="0" HorizontalAlignment="Right" Margin="0,8,0,0" Cursor="Hand" Click="ViewAllTasks_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            
+            <!-- 活动日志区域 -->
+            <Border Grid.Row="4" Style="{StaticResource CardStyle}" Margin="0,16,0,16">
+                <StackPanel>
+                    <TextBlock Text="活动日志" Style="{StaticResource TitleStyle}"/>
+                    <ListBox x:Name="ActivityLogListBox" Height="120" BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,4">
+                                    <TextBlock Text="{Binding Timestamp}" FontSize="12" Foreground="#666666" Width="140"/>
+                                    <TextBlock Text="{Binding Message}" FontSize="12" Foreground="#333333"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Page>
