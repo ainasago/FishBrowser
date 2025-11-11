@@ -895,6 +895,25 @@ namespace FishBrowser.WPF.Views
             StatusText.Text = "已刷新";
         }
 
+        private void OpenCloudflareTest_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var testWindow = new WebScraperApp.Views.CloudflareTestWindow
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                testWindow.Show();
+                _log.LogInfo("BrowserMgmt", "Cloudflare test window opened");
+                StatusText.Text = "已打开 Cloudflare 测试窗口";
+            }
+            catch (Exception ex)
+            {
+                _log.LogError("BrowserMgmt", $"Failed to open Cloudflare test window: {ex.Message}", ex.StackTrace);
+                MessageBox.Show($"打开测试窗口失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         #endregion
 
         #region 测试工具

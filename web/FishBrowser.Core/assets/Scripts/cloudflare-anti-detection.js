@@ -143,23 +143,51 @@
         });
     }
     
-    // 11. 伪装 vendor（Chrome 在所有平台都是 "Google Inc."）
-    // 注意：只有 Safari 才会返回 "Apple Computer, Inc."
-    console.log('[cloudflare-anti-detection.js] Setting up vendor property...');
+    // 11. 伪装 vendor（根据平台动态设置）
+    // ⚠️ 重要：不要覆盖已经正确设置的 vendor（Turnstile 绕过脚本已经设置过了）
+    console.log('[cloudflare-anti-detection.js] Checking vendor property...');
     console.log('[cloudflare-anti-detection.js] Current platform:', navigator.platform);
-    console.log('[cloudflare-anti-detection.js] Current vendor (before):', navigator.vendor);
+    console.log('[cloudflare-anti-detection.js] Current vendor:', navigator.vendor);
     
-    Object.defineProperty(navigator, 'vendor', {
-        get: () => {
-            // Chrome 浏览器在所有平台（包括 macOS/iOS）的 vendor 都是 "Google Inc."
-            const vendorValue = 'Google Inc.';
-            console.log('[cloudflare-anti-detection.js] vendor getter called - platform:', navigator.platform, '-> vendor:', vendorValue);
-            return vendorValue;
-        },
-        configurable: true
-    });
+    // 检查 vendor 是否已经正确设置
+    const currentPlatform = navigator.platform || 'Win32';
+    const currentVendor = navigator.vendor;
+    const expectedVendor = (currentPlatform === 'iPhone' || currentPlatform === 'iPad' || currentPlatform === 'iPod' || currentPlatform === 'MacIntel') 
+        ? 'Apple Computer, Inc.' 
+        : 'Google Inc.';
     
-    console.log('[cloudflare-anti-detection.js] Vendor property set. Testing:', navigator.vendor);
+    // 只有在 vendor 不正确时才覆盖
+    if (currentVendor !== expectedVendor) {
+        console.log('[cloudflare-anti-detection.js] ⚠️ Vendor mismatch, fixing...');
+        console.log(`[cloudflare-anti-detection.js]   Current: ${currentVendor}`);
+        console.log(`[cloudflare-anti-detection.js]   Expected: ${expectedVendor}`);
+        
+        Object.defineProperty(navigator, 'vendor', {
+            get: () => {
+                // 根据 platform 动态返回正确的 vendor
+                const platform = navigator.platform || 'Win32';
+                let vendorValue;
+                
+                if (platform === 'iPhone' || platform === 'iPad' || platform === 'iPod' || platform === 'MacIntel') {
+                    // iOS/macOS 设备 - Safari 使用 Apple
+                    vendorValue = 'Apple Computer, Inc.';
+                } else if (platform === 'Linux armv8l' || platform.startsWith('Linux')) {
+                    // Android/Linux - Chrome 使用 Google
+                    vendorValue = 'Google Inc.';
+                } else {
+                    // Windows/其他 - Chrome 使用 Google
+                    vendorValue = 'Google Inc.';
+                }
+                
+                return vendorValue;
+            },
+            configurable: true
+        });
+        
+        console.log('[cloudflare-anti-detection.js] ✅ Vendor fixed:', navigator.vendor);
+    } else {
+        console.log('[cloudflare-anti-detection.js] ✅ Vendor already correct, skipping');
+    }
     
     // 12. 伪装 appVersion（必须与 userAgent 一致）
     Object.defineProperty(navigator, 'appVersion', {

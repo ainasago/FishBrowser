@@ -409,9 +409,15 @@ namespace FishBrowser.WPF.Services
                 var userAgent = (profile.UserAgent ?? "").Replace("'", "\\'").Replace("\"", "\\\"");
                 var maxTouchPoints = profile.MaxTouchPoints;
                 
-                // ⭐ Chrome 浏览器在所有平台的 Vendor 都是 "Google Inc."
-                // 注意：只有 Safari 才会返回 "Apple Computer, Inc."
-                var vendor = "Google Inc.";
+                // ⭐ 根据平台动态设置 Vendor
+                // iOS/macOS: "Apple Computer, Inc." (Safari)
+                // Windows/Linux/Android: "Google Inc." (Chrome)
+                var vendor = (profile.Platform ?? "Win32") switch
+                {
+                    "iPhone" or "iPad" or "iPod" or "MacIntel" => "Apple Computer, Inc.",
+                    "Linux armv8l" => "Google Inc.",  // Android
+                    _ => "Google Inc."  // Windows/Linux
+                };
                 
                 // 获取 webdriver 配置
                 var webdriverMode = environment?.WebdriverMode ?? "undefined";
@@ -488,6 +494,19 @@ namespace FishBrowser.WPF.Services
                 _driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", cdpCommand);
                 _log.LogInfo("UndetectedChrome", $"✅ CDP script injected: Platform={platform}, Vendor={vendor}, MaxTouchPoints={maxTouchPoints}, WebdriverMode={webdriverMode}");
                 
+                // ⭐ 注入 Turnstile 专用绕过脚本（优先级最高）
+                var turnstileBypassPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "scripts", "cloudflare-turnstile-bypass.js");
+                if (File.Exists(turnstileBypassPath))
+                {
+                    var turnstileScript = File.ReadAllText(turnstileBypassPath);
+                    var turnstileCdpCommand = new Dictionary<string, object>
+                    {
+                        { "source", turnstileScript }
+                    };
+                    _driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", turnstileCdpCommand);
+                    _log.LogInfo("UndetectedChrome", $"✅ CDP Turnstile bypass script injected (size: {turnstileScript.Length} bytes)");
+                }
+                
                 // ⭐ 也注入 cloudflare-anti-detection.js 到每个新页面（用于其他防检测措施）
                 var antiDetectionScriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "scripts", "cloudflare-anti-detection.js");
                 if (File.Exists(antiDetectionScriptPath))
@@ -499,6 +518,19 @@ namespace FishBrowser.WPF.Services
                     };
                     _driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", antiDetectionCdpCommand);
                     _log.LogInfo("UndetectedChrome", $"✅ CDP anti-detection script injected (size: {antiDetectionScript.Length} bytes)");
+                }
+                
+                // ⭐ 注入 Cloudflare 等待助手（监控验证状态）
+                var waitHelperPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "scripts", "cloudflare-wait-helper.js");
+                if (File.Exists(waitHelperPath))
+                {
+                    var waitHelperScript = File.ReadAllText(waitHelperPath);
+                    var waitHelperCdpCommand = new Dictionary<string, object>
+                    {
+                        { "source", waitHelperScript }
+                    };
+                    _driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", waitHelperCdpCommand);
+                    _log.LogInfo("UndetectedChrome", $"✅ CDP Cloudflare wait helper injected (size: {waitHelperScript.Length} bytes)");
                 }
             }
             catch (Exception ex)

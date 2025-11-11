@@ -40,6 +40,10 @@
 
                 <!-- 右侧按钮 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="🧪 CF测试" Width="100" Height="36" Margin="0,0,8,0" 
+                            Background="#9C27B0" Foreground="White" BorderThickness="0"
+                            Click="OpenCloudflareTest_Click" FontWeight="Bold"
+                            ToolTip="打开 Cloudflare 绕过测试窗口"/>
                     <Button Content="🪄 一键随机" Width="120" Height="36" Margin="0,0,8,0" 
                             Background="#FF6B35" Foreground="White" BorderThickness="0"
                             Click="CreateRandomBrowser_Click" FontWeight="Bold"
